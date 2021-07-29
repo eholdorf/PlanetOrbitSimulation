@@ -32,10 +32,32 @@ Omega = models.interpolate_Omega()
 i = models.interpolate_inclination()
 e = models.interpolate_eccentricity()
 
-def simulate_orbit(time, T, a, e, Omega, omega, i, dates):
+def simulate_orbit(time, T, a, e, Omega, omega, i, dates, random = False):
     
-    rho, theta, vr = bo.binary_orbit([time,T,a,e,Omega,omega,i],dates)
     
+    if random == False:
+        rho, theta, vr = bo.binary_orbit([time,T,a,e,Omega,omega,i],dates)
+    else:
+        j = np.random.randint(0,10000)
+        
+        a = models.interpolate_semimajoraxis()[j]
+        T = models.interpolate_period([a])[0]
+        omega = models.interpolate_omega()[np.random.randint(0,10000)]
+        Omega = models.interpolate_Omega()[np.random.randint(0,10000)]
+        i = models.interpolate_inclination()[np.random.randint(0,10000)]
+        e = models.interpolate_eccentricity()[np.random.randint(0,10000)]
+        
+        rho, theta, vr = bo.binary_orbit([0,T,a,e,Omega,omega,i],
+                                        np.array(np.linspace(0,T,1000)))
+        
+    print('The time of periastron passage:',time)
+    print('Period:', T, 'days.')
+    print('Semi-major axis:', a,'au.')
+    print('Eccentricity:',e)
+    print('Omega:', Omega, 'degrees.')
+    print('omega:', omega, 'degrees.')
+    print('Inclination:', i, 'degrees.')
+        
     plt.figure()
     plt.clf()
     plt.axis('equal')
