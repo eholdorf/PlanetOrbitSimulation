@@ -106,7 +106,7 @@ def eccentricity_model(e,a = 0.867,b=3.03):
     return top/bottom * e**(a-1) * (1-e)**(b-1)
 
 # set of eccentricities
-Eccentricities = np.linspace(0.001,1,100)
+Eccentricities = np.linspace(0.001,1,1000)
 
 # occurence of each eccentricity 
 EccentricityDistn = eccentricity_model(Eccentricities)
@@ -119,18 +119,25 @@ plt.xlabel('Eccentricities')
 plt.ylabel('Occurence')
 
 # find the cumulative distribution of eccentricites 
-EccentricitesCumulative = np.cumsum(EccentricityDistn)
+EccentricityCumulative = np.cumsum(EccentricityDistn)
 
 # normalise the cumulative distribution of eccentricities
-EccentricitesCumulative /= EccentricitesCumulative[-1]
+EccentricityCumulative /= EccentricityCumulative[-1]
 
 # plot the normalised distribution of eccentricities 
 plt.figure()
 plt.clf()
-plt.plot(Eccentricities, EccentricitesCumulative)
+plt.plot(Eccentricities, EccentricityCumulative)
 plt.xlabel('Eccentricities')
 plt.ylabel('Cumulative Probability of Eccentricity')
 
+# mike's way of interpolating values
+EccentricityInterp = np.interp(np.random.uniform(size = 10000),
+                              EccentricityCumulative,EccentricityDistn)
+
+# my way interpolating values
+EccentricityInterp2 = np.random.choice(np.linspace(0,1,1000),size = 10000, 
+                         p = EccentricityDistn/sum(EccentricityDistn))
 def inclination_model(i, edge_angle = 90):
     '''
     Parameters
@@ -161,15 +168,15 @@ def inclination_model(i, edge_angle = 90):
 
 # set of inclination angles
 
-inclinations = np.linspace(0,np.pi,1000)
+inclinations = np.linspace(0,180,1000)
 
 # inclination distribution
-InclinationDistn = np.sin(inclinations)
+InclinationDistn = inclination_model(inclinations)
 
 # plot of inclination angles
 plt.figure()
 plt.clf()
-plt.plot(inclinations,InclinationDistn )
+plt.plot(inclinations,InclinationDistn)
 plt.xlabel('Inclination')
 plt.ylabel('Occurence')
 
@@ -186,8 +193,16 @@ plt.plot(inclinations, InclinationCumulative)
 plt.xlabel('Inclinations')
 plt.ylabel('Cumulative Probability of Eccentricity')
 
+# mike's way of interpolating values
+InclinationInterp = np.interp(np.random.uniform(size = 10000),
+                              InclinationCumulative,InclinationDistn)
+
+# my way interpolating values
+InclinationInterp2 = np.random.choice(np.linspace(0,180,1000),size = 10000, 
+                         p = InclinationDistn/sum(InclinationDistn))
+
 # -----------------------------------------------------------------------------
-# testing making a cumulative distribution 
+# testing making a cumulative distribution - mike's way
 # -----------------------------------------------------------------------------
 
 # some pdf
@@ -206,3 +221,13 @@ vals = np.interp(np.random.uniform(size=10000),cumdist,test)
 plt.figure()
 plt.clf()
 plt.hist(vals) 
+
+# -----------------------------------------------------------------------------
+# testing making a cumulative distribution - my way
+# -----------------------------------------------------------------------------
+
+# some pdf
+test = np.arange(100)
+
+# interpolate 10 000 random values onto this distribution
+vals2 = np.random.choice(100,size=10000, p = test/sum(test))
