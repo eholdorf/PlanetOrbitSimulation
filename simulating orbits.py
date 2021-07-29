@@ -8,6 +8,7 @@ import binary_orbit as bo
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import Table
+import model_parameters as models
 
 # testing Mike's code for planet simulation
 '''
@@ -17,8 +18,26 @@ anomoly, do deriv?)
 '''
 rho, theta, vr = bo.binary_orbit([0,365,1,0,0,0,0],np.array(np.linspace(0,365,1000)))
 
+plt.figure()
+plt.clf()
 plt.axis('equal')
 plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
 
 dd = Table.read('HGCA_vEDR3.fits')
 
+a = models.interpolate_semimajoraxis()
+T = models.interpolate_period(a)
+omega = models.interpolate_omega()
+Omega = models.interpolate_Omega()
+i = models.interpolate_inclination()
+e = models.interpolate_eccentricity()
+
+def simulate_orbit(time, T, a, e, Omega, omega, i, dates):
+    
+    rho, theta, vr = bo.binary_orbit([time,T,a,e,Omega,omega,i],dates)
+    
+    plt.figure()
+    plt.clf()
+    plt.axis('equal')
+    plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
+    

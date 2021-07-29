@@ -7,6 +7,7 @@ Created on Thu Jul 29 13:55:17 2021
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import gamma as scipygamma
+import astropy.units as u
 
 
 def Fulton_model(a, C = 350, beta = -0.86,a0 = 3.6, gamma = 1.59):
@@ -307,6 +308,52 @@ def interpolate_omega(low = 0, high = 180, num = 10000):
     '''
     Omega = np.linspace(low,high,num)
     return Omega
+
+def interpolate_semimajoraxis(low = 3, high = 30, num = 10000):
+    '''
+
+    Parameters
+    ----------
+    low : TYPE, optional
+        DESCRIPTION. The default is 3.
+    high : TYPE, optional
+        DESCRIPTION. The default is 30.
+    num : TYPE, optional
+        DESCRIPTION. The default is 10000.
+
+    Returns
+    -------
+    a : TYPE
+        DESCRIPTION.
+
+    '''
+    
+    a = np.linspace(low,high,num)
+    
+    return a
+
+def interpolate_period(a, num = 10000):
+    '''
+
+    Parameters
+    ----------
+    a : TYPE
+        DESCRIPTION.
+    num : TYPE, optional
+        DESCRIPTION. The default is 10000.
+
+    Returns
+    -------
+    T : TYPE
+        DESCRIPTION.
+
+    '''
+    T = []
+    
+    for val in a:
+        T.append((np.sqrt(val**3)*u.yr).to(u.day).value)
+    
+    return T
 
 # -----------------------------------------------------------------------------
 # testing making a cumulative distribution - mike's way
