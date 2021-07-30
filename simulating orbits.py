@@ -32,9 +32,12 @@ Omega = models.interpolate_Omega()
 i = models.interpolate_inclination()
 e = models.interpolate_eccentricity()
 
-def simulate_orbit(time, T, a, e, Omega, omega, i, dates, random = False):
+def simulate_orbit(time= 0, T=0, a=0, e=0, Omega=0, omega=0, i=0, dates=0, 
+                   random = False):
     
-    
+    if random == False and a == 0:
+        raise ValueError('No values given and not a random orbit.')
+     
     if random == False:
         rho, theta, vr = bo.binary_orbit([time,T,a,e,Omega,omega,i],dates)
     else:
