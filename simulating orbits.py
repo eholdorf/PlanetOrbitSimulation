@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table
 import model_parameters as models
 from mpl_toolkits import mplot3d
+import re
 
 # testing Mike's code for planet simulation
 '''
@@ -107,4 +108,33 @@ def simulate_orbit(time= 0, T=0, a=0, e=0, Omega=0, omega=0, i=0, dates=0,
     ax.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)),'k')
     ax.plot([0],[0],[0],'o', color = 'orange')
     
+# extract the data from table to find mass
+f = open('AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
+lines = f.readlines()
+
+BpRp = []
+Mass = []
+M_G = []
+
+for line in lines[25:88]:
+    BpRpIndex = re.search('(-)*(\d)\.(\d)+', line[73:])
+    BpRp.append(BpRpIndex.group())
+    
+    MassIndex = re.search('\d+\.*\d+',line[205:])
+    Mass.append(MassIndex.group())
+    
+    M_GIndex = re.search('-*\d+\.*\d*', line[88:])    
+    M_G.append(M_GIndex.group())
+    
+f.close()
+
+i = 0
+indexes = []
+while i < len(M_G):
+    if abs(abs(BpRp[i])-abs(M_G[i]))<2.0:
+        indexes.append(i)
+    i += 1
+
+BpRpChecked = [BpRp[i] for i in indexes]
+MassChecked = [Mass[i] for i in indexes]
     
