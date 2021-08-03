@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import gamma as scipygamma
 import astropy.units as u
+import re
 
 
 def Fulton_model(a, C = 350, beta = -0.86,a0 = 3.6, gamma = 1.59):
@@ -72,7 +73,7 @@ plt.ylabel('Normalised Cummulative Occurence')
 plt.title('Normalised Cumulative Distribution')
 
 
-def eccentricity_model(e,a = 0.867,b=3.03):
+def eccentricity_model(e,a = 1.12,b=3.09):
     '''
 
     Parameters
@@ -332,13 +333,15 @@ def interpolate_semimajoraxis(low = 3, high = 30, num = 10000):
     
     return a
 
-def interpolate_period(a, num = 10000):
+def interpolate_period(a, m, num = 10000):
     '''
 
     Parameters
     ----------
-    a : TYPE
+    a : TYPE (in au)
         DESCRIPTION.
+    m : TYPE (in solar masses)
+        DESCRIPTION
     num : TYPE, optional
         DESCRIPTION. The default is 10000.
 
@@ -350,11 +353,79 @@ def interpolate_period(a, num = 10000):
     '''
     T = []
     
-    for val in a:
-        T.append((np.sqrt(val**3)*u.yr).to(u.day).value)
+    i = 0
+    while i < min(len(a),len(m)):
+        T.append((np.sqrt(a[i]**3/m[i])*u.yr).to(u.day).value)
+        i += 1
     
     return T
 
+def interpolate_mass(data,num = 10000):
+    '''
+
+    Parameters
+    ----------
+    data : list
+        The Bp-Rp data from chosen stars.
+    num : TYPE, optional
+        DESCRIPTION. The default is 10000.
+
+    Returns
+    -------
+    MassInterp : TYPE
+        DESCRIPTION.
+
+    '''
+    f = open('AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
+    lines = f.readlines()
+    
+    BpRp = []
+    Mass = []
+    M_G = []
+    
+    for line in lines[25:88]:
+        BpRpIndex = re.search('(-)*(\d)\.(\d)+', line[73:])
+        BpRp.append(float(BpRpIndex.group()))
+        
+        MassIndex = re.search('\d+\.*\d+',line[205:])
+        Mass.append(float(MassIndex.group()))
+        
+        M_GIndex = re.search('-*\d+\.*\d*', line[88:])    
+        M_G.append(float((M_GIndex.group())))
+        
+    f.close()
+    
+    i = 0
+    indexes = []
+    while i < len(M_G):
+        if abs(abs(BpRp[i])-abs(M_G[i]))<2.0:
+            indexes.append(i)
+        i += 1
+    
+    BpRpChecked = [BpRp[i] for i in indexes]
+    MassChecked = [Mass[i] for i in indexes]
+    
+    MassInterp = np.interp(data,BpRp,Mass)
+    
+    return MassInterp
+    
+def interpolate_planet_mass(num = 10000):
+    '''
+
+    Returns
+    -------
+    None.
+
+    model from : https://arxiv.org/pdf/astro-ph/0607493.pdf
+    '''
+    masses = np.linspace(0.6,17,num)
+    
+    MassDistn = masses**(-1.9)
+    
+    MassInterp = np.random.choice(masses, size = num, 
+                             p = MassDistn/sum(MassDistn))
+    
+    return MassInterp*0.0009545942339693249
 # -----------------------------------------------------------------------------
 # testing making a cumulative distribution - mike's way
 # -----------------------------------------------------------------------------
