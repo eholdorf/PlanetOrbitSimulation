@@ -11,6 +11,8 @@ from astropy.table import Table
 import model_parameters as models
 from mpl_toolkits import mplot3d
 import re
+import astropy.units as u
+
 
 # testing Mike's code for planet simulation
 '''
@@ -123,16 +125,16 @@ def simulate_orbit(time= 0, T=0, a=0, e=0, Omega=0, omega=0, i=0, dates=0, m=0,
         ax.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)),'k')
         ax.plot([0],[0],[0],'o', color = 'orange')
         
-    rho_star = rho_planet * m/m_p
+    rho_star = rho_planet * m_p/m
     dec = rho_star*np.cos(np.radians(theta))
     ra = rho_star*np.sin(np.radians(theta))
     return [[rho_star,rho_planet], [theta, ra, dec], vr,[time,T,a,e,Omega,omega,i]]
 
 # trial plot simulation with first star
 all_data = []
-for val in bp_rp:
+for val in bp_rp[0:1]:
     dats = []
-    for i in range(10): 
+    for i in range(1): 
         m_planet = models.interpolate_planet_mass()[np.random.randint(0,10000)]
         m_star = models.interpolate_mass(val,1)
         t_k = np.array([1991.25,2015.0,2017.0])
@@ -145,3 +147,27 @@ for val in bp_rp:
         
         dats.append(simulate_orbit(2021,T,a,e,Omega,omega,i,t_k,m_star,m_planet))
     all_data.append(dats)
+    
+def proper_motion(RA1,DEC1,t1,RA2,DEC2,t2):
+    RA1 = (RA1 * u.deg).to(u.mas)
+    RA2 = (RA2 * u.deg).to(u.mas)
+    DEC1 = (DEC1 * u.deg).to(u.mas)
+    DEC2 = (DEC2 * u.deg).to(u.mas)
+    delta_RA = RA2 - RA1
+    delta_DEC = DEC2 - DEC2
+    delta_t = round((t2 - t1)*365.25)*u.yr
+    # ask mike which DEC to use in cos
+    mu_RA = delta_RA/delta_t # * np.cos(np.radians(DEC1.to(u.deg)))
+    mu_DEC = delta_DEC/delta_t
+    
+    mu = np.sqrt(mu_RA**2 - mu_DEC**2)
+    
+    return [mu, mu_RA, mu_DEC]
+
+def chisq(mu_S1,mu_S2,mu_E1,mu_E2):
+    
+    mu_S = abs(abs(mu_S1) - abs(mu_S2))
+    mu_E = abs(abs(mu_E1) - abs(mu_E2))
+    
+    return (mu_S - mu_E)**2 /mu_E
+    
