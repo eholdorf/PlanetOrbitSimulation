@@ -132,9 +132,9 @@ def simulate_orbit(time= 0, T=0, a=0, e=0, Omega=0, omega=0, i=0, dates=0, m=0,
 
 # trial plot simulation with first star
 all_data = []
-for val in bp_rp[0:2]:
+for val in bp_rp:
     dats = []
-    for i in range(2): 
+    for i in range(1000): 
         m_planet = models.interpolate_planet_mass()[np.random.randint(0,10000)]
         m_star = models.interpolate_mass(val,1)
         t_k = np.array([1991.25,2015.0,2017.0])
@@ -177,14 +177,26 @@ def calc_chi_sq(data,mu_RA_hip, mu_RA_gaia, mu_DEC_hip,mu_DEC_gaia,i,j):
     # j is the simulation iterator
     
     # simulation values of RA and DEC between gaia dates
-    a = proper_motion(data[i][j][1][1][1],data[0][0][1][2][1],2015.0,
-                      data[i][j][1][1][2],data[0][0][1][2][2],2017.0)
+    a = proper_motion(data[j][1][1][1],data[0][1][2][1],2015.0,
+                      data[j][1][1][2],data[0][1][2][2],2017.0)
 
     # simulation values of RA and DEC between hipparcos and gaia
-    b = proper_motion(data[i][j][1][1][0],data[0][0][1][2][0],1991.25,
-                      data[i][j][1][1][2],all_data[0][0][1][2][2],2017.0)
+    b = proper_motion(data[j][1][1][0],data[0][1][2][0],1991.25,
+                      data[j][1][1][2],all_data[0][1][2][2],2017.0)
 
     chi_RA = chisq(b[1].value,a[1].value,mu_RA_hip,mu_RA_gaia)
     chi_DEC = chisq(b[2].value,a[2].value,mu_DEC_hip,mu_DEC_gaia)
     
     return [chi_RA,chi_DEC]
+
+i = 0
+for val in all_data:
+    for j in range(100):
+        chi = calc_chi_sq(val,data_30pc_chisq[i][19],data_30pc_chisq[i][9],
+                          data_30pc_chisq[i][20],data_30pc_chisq[i][10],0,j)
+    
+    for elem in chi:
+        if elem > 9.5:
+            print(elem, j, data_30pc_chisq[i])
+    i += 1
+    
