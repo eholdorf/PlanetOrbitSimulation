@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from scipy.special import gamma as scipygamma
 import astropy.units as u
 import re
-
+plt.ion()
 
 def Fulton_model(a, C = 350, beta = -0.86,a0 = 3.6, gamma = 1.59):
     '''
@@ -36,42 +36,6 @@ def Fulton_model(a, C = 350, beta = -0.86,a0 = 3.6, gamma = 1.59):
     occurence= C * a**beta * (1-np.exp(-(a/a0)**gamma))
     return occurence
 
-# set of semi major axis lengths to look at 
-SemiMajorAxis = np.linspace(0.01,30,200)
-
-# occurence of planets at different semi-major axis lengths according to 
-# Fulton model
-FultonOccurence = Fulton_model(SemiMajorAxis)
-
-# plot the Fulton Model
-plt.figure()
-plt.clf()
-plt.plot(SemiMajorAxis,FultonOccurence)
-plt.xlabel('Semi Major Axis (au)')
-plt.ylabel('Occurence')
-
-# cumulative distribution of planet occurence with Fulton Model
-OccurenceCumulativeDistn = np.cumsum(FultonOccurence)
-
-# plot cumulative distribution of planet occurence with Fulton Model
-plt.figure()
-plt.clf()
-plt.plot(SemiMajorAxis,OccurenceCumulativeDistn)
-plt.xlabel('Semi Major Axis (au)')
-plt.ylabel('Cummulative Occurence')
-plt.title('Cumulative Distribution')
-
-# normalise the cumulative distribution of planet occurence with Fulton Model
-OccurenceCumulativeDistn /= max(OccurenceCumulativeDistn)
-
-# plot normalised cumulative distribution of planet occurence with Fulton Model
-plt.figure()
-plt.clf()
-plt.plot(SemiMajorAxis, OccurenceCumulativeDistn)
-plt.xlabel('Semi Major Axis (au)')
-plt.ylabel('Normalised Cummulative Occurence')
-plt.title('Normalised Cumulative Distribution')
-
 
 def eccentricity_model(e,a = 1.12,b=3.09):
     '''
@@ -96,41 +60,8 @@ def eccentricity_model(e,a = 1.12,b=3.09):
     bottom= scipygamma(a)*scipygamma(b)
     return top/bottom * e**(a-1) * (1-e)**(b-1)
 
-# set of eccentricities
-Eccentricities = np.linspace(0.001,1,1000)
 
-# occurence of each eccentricity 
-EccentricityDistn = eccentricity_model(Eccentricities)
-
-# plotting the eccentrictiy model
-plt.figure()
-plt.clf()
-plt.plot(Eccentricities,EccentricityDistn )
-plt.xlabel('Eccentricities')
-plt.ylabel('Occurence')
-
-# find the cumulative distribution of eccentricites 
-EccentricityCumulative = np.cumsum(EccentricityDistn)
-
-# normalise the cumulative distribution of eccentricities
-EccentricityCumulative /= EccentricityCumulative[-1]
-
-# plot the normalised distribution of eccentricities 
-plt.figure()
-plt.clf()
-plt.plot(Eccentricities, EccentricityCumulative)
-plt.xlabel('Eccentricities')
-plt.ylabel('Cumulative Probability of Eccentricity')
-
-# mike's way of interpolating values
-EccentricityInterp = np.interp(np.random.uniform(size = 10000),
-                              EccentricityCumulative,EccentricityDistn)
-
-# my way interpolating values
-EccentricityInterp2 = np.random.choice(np.linspace(0,1,1000),size = 10000, 
-                         p = EccentricityDistn/sum(EccentricityDistn))
-
-def interpolate_eccentricity(low = 0.001,high = 1,num = 10000):
+def interpolate_eccentricity(low = 0.001,high = 1,num = 10000, ninterp=1000):
     '''
 
     Parameters
@@ -150,7 +81,7 @@ def interpolate_eccentricity(low = 0.001,high = 1,num = 10000):
     '''
     
     # eccentricities to interpolate with random values
-    e = np.linspace(low,high,num)
+    e = np.linspace(low,high,ninterp)
     
     # occurence of each eccentricity 
     EccentricityDistn = eccentricity_model(e)
@@ -196,42 +127,8 @@ def inclination_model(i, edge_angle = 90):
     else:
         return 'Not valid edge_angle, should be 0 deg or 90 deg.'
 
-# set of inclination angles
 
-inclinations = np.linspace(0,180,1000)
-
-# inclination distribution
-InclinationDistn = inclination_model(inclinations)
-
-# plot of inclination angles
-plt.figure()
-plt.clf()
-plt.plot(inclinations,InclinationDistn)
-plt.xlabel('Inclination')
-plt.ylabel('Occurence')
-
-# cumulative distribution of inclination angles
-InclinationCumulative = np.cumsum(InclinationDistn)
-
-# normalising cumulative distribution of inclination angles
-InclinationCumulative /= InclinationCumulative[-1]
-
-# plotting the normalised cumulative distribution of inclination angles
-plt.figure()
-plt.clf()
-plt.plot(inclinations, InclinationCumulative)
-plt.xlabel('Inclinations')
-plt.ylabel('Cumulative Probability of Inclination')
-
-# mike's way of interpolating values
-InclinationInterp = np.interp(np.random.uniform(size = 10000),
-                              InclinationCumulative,InclinationDistn)
-
-# my way interpolating values
-InclinationInterp2 = np.random.choice(np.linspace(0,180,1000),size = 10000, 
-                         p = InclinationDistn/sum(InclinationDistn))
-
-def interpolate_inclination(low = 0,high = 180,num = 10000):
+def interpolate_inclination(low = 0,high = 180,num = 10000, ninterp=1000):
     '''
 
     Parameters
@@ -251,7 +148,7 @@ def interpolate_inclination(low = 0,high = 180,num = 10000):
     '''
     
     # eccentricities to interpolate with random values
-    i = np.linspace(low,high,num)
+    i = np.linspace(low,high,ninterp)
     
     # inclination distribution
     InclinationDistn = inclination_model(i)
@@ -286,7 +183,7 @@ def interpolate_Omega(low = 0, high = 360, num = 10000):
         DESCRIPTION.
 
     '''
-    Omega = np.linspace(low,high,num)
+    Omega = np.random.uniform(low=low, high=high, size=num) 
     return Omega
 
 def interpolate_omega(low = 0, high = 180, num = 10000):
@@ -307,10 +204,10 @@ def interpolate_omega(low = 0, high = 180, num = 10000):
         DESCRIPTION.
 
     '''
-    Omega = np.linspace(low,high,num)
-    return Omega
+    omega = np.random.uniform(low=low, high=high, size=num) 
+    return omega
 
-def interpolate_semimajoraxis(low = 3, high = 30, num = 10000):
+def interpolate_semimajoraxis(low = 3, high = 30, num = 10000, ninterp=1000):
     '''
 
     Parameters
@@ -329,12 +226,21 @@ def interpolate_semimajoraxis(low = 3, high = 30, num = 10000):
 
     '''
     
-    a = np.linspace(low,high,num)
+    a = np.linspace(low,high,ninterp)
     
-    return a
+    # semi-major axis distribution
+    aDistn = Fulton_model(a)
+    
+    # my way interpolating values
+    a_choice = np.random.choice(a, size = num, 
+                             p = aDistn/sum(aDistn))
+    
+    return a_choice
 
-def interpolate_period(a, m, num = 10000):
+def interpolate_period(a, m):
     '''
+    Given a list of semi-major axes and masses, find the periods 
+    according to Kepler's law.
 
     Parameters
     ----------
@@ -342,8 +248,6 @@ def interpolate_period(a, m, num = 10000):
         DESCRIPTION.
     m : TYPE (in solar masses)
         DESCRIPTION
-    num : TYPE, optional
-        DESCRIPTION. The default is 10000.
 
     Returns
     -------
@@ -360,15 +264,13 @@ def interpolate_period(a, m, num = 10000):
     
     return T
 
-def interpolate_mass(data,num = 10000):
+def interpolate_mass(data, ddir='./'):
     '''
 
     Parameters
     ----------
     data : list
         The Bp-Rp data from chosen stars.
-    num : TYPE, optional
-        DESCRIPTION. The default is 10000.
 
     Returns
     -------
@@ -376,7 +278,7 @@ def interpolate_mass(data,num = 10000):
         DESCRIPTION.
 
     '''
-    f = open('AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
+    f = open(ddir+'AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
     lines = f.readlines()
     
     BpRp = []
@@ -409,7 +311,7 @@ def interpolate_mass(data,num = 10000):
     
     return MassInterp
     
-def interpolate_planet_mass(num = 10000):
+def interpolate_planet_mass(num = 10000, ninterp=1000):
     '''
 
     Returns
@@ -418,41 +320,151 @@ def interpolate_planet_mass(num = 10000):
 
     model from : https://arxiv.org/pdf/astro-ph/0607493.pdf
     '''
-    masses = np.linspace(0.6,17,num)
+    m_jup_in_m_sun = 0.0009545942339693249 
+    
+    masses = np.linspace(0.6,17,ninterp)
     
     MassDistn = masses**(-1.9)
     
     MassInterp = np.random.choice(masses, size = num, 
                              p = MassDistn/sum(MassDistn))
     
-    return MassInterp*0.0009545942339693249
-# -----------------------------------------------------------------------------
-# testing making a cumulative distribution - mike's way
-# -----------------------------------------------------------------------------
+    return MassInterp*m_jup_in_m_sun
 
-# some pdf
-test = np.arange(10)
+if __name__=="__main__":
+    # set of semi major axis lengths to look at 
+    SemiMajorAxis = np.linspace(0.01,30,200)
 
-# cumulative distribution
-cumdist = np.cumsum(test).astype(float)
+    # occurence of planets at different semi-major axis lengths according to 
+    # Fulton model
+    FultonOccurence = Fulton_model(SemiMajorAxis)
 
-# normalise the values
-cumdist /= cumdist[-1] 
+    # plot the Fulton Model
+    plt.figure()
+    plt.clf()
+    plt.plot(SemiMajorAxis,FultonOccurence)
+    plt.xlabel('Semi Major Axis (au)')
+    plt.ylabel('Occurence')
 
-# interpolate 10 000 random values onto this distribution
-vals = np.interp(np.random.uniform(size=10000),cumdist,test) 
+    # cumulative distribution of planet occurence with Fulton Model
+    OccurenceCumulativeDistn = np.cumsum(FultonOccurence)
 
-# verify by plotting (should look like original distribution)
-plt.figure()
-plt.clf()
-plt.hist(vals) 
+    # plot cumulative distribution of planet occurence with Fulton Model
+    plt.figure()
+    plt.clf()
+    plt.plot(SemiMajorAxis,OccurenceCumulativeDistn)
+    plt.xlabel('Semi Major Axis (au)')
+    plt.ylabel('Cummulative Occurence')
+    plt.title('Cumulative Distribution')
 
-# -----------------------------------------------------------------------------
-# testing making a cumulative distribution - my way
-# -----------------------------------------------------------------------------
+    # normalise the cumulative distribution of planet occurence with Fulton Model
+    OccurenceCumulativeDistn /= max(OccurenceCumulativeDistn)
 
-# some pdf
-test = np.arange(100)
+    # plot normalised cumulative distribution of planet occurence with Fulton Model
+    plt.figure()
+    plt.clf()
+    plt.plot(SemiMajorAxis, OccurenceCumulativeDistn)
+    plt.xlabel('Semi Major Axis (au)')
+    plt.ylabel('Normalised Cummulative Occurence')
+    plt.title('Normalised Cumulative Distribution')
 
-# interpolate 10 000 random values onto this distribution
-vals2 = np.random.choice(100,size=10000, p = test/sum(test))
+    # set of inclination angles
+
+    inclinations = np.linspace(0,180,1000)
+
+    # inclination distribution
+    InclinationDistn = inclination_model(inclinations)
+
+    # plot of inclination angles
+    plt.figure()
+    plt.clf()
+    plt.plot(inclinations,InclinationDistn)
+    plt.xlabel('Inclination')
+    plt.ylabel('Occurence')
+
+    # cumulative distribution of inclination angles
+    InclinationCumulative = np.cumsum(InclinationDistn)
+
+    # normalising cumulative distribution of inclination angles
+    InclinationCumulative /= InclinationCumulative[-1]
+
+    # plotting the normalised cumulative distribution of inclination angles
+    plt.figure()
+    plt.clf()
+    plt.plot(inclinations, InclinationCumulative)
+    plt.xlabel('Inclinations')
+    plt.ylabel('Cumulative Probability of Inclination')
+
+    # mike's way of interpolating values
+    InclinationInterp = np.interp(np.random.uniform(size = 10000),
+                                  InclinationCumulative,InclinationDistn)
+
+    # my way interpolating values
+    InclinationInterp2 = np.random.choice(np.linspace(0,180,1000),size = 10000, 
+                             p = InclinationDistn/sum(InclinationDistn))
+
+    # set of eccentricities
+    Eccentricities = np.linspace(0.001,1,1000)
+
+    # occurence of each eccentricity 
+    EccentricityDistn = eccentricity_model(Eccentricities)
+
+    # plotting the eccentrictiy model
+    plt.figure()
+    plt.clf()
+    plt.plot(Eccentricities,EccentricityDistn )
+    plt.xlabel('Eccentricities')
+    plt.ylabel('Occurence')
+
+    # find the cumulative distribution of eccentricites 
+    EccentricityCumulative = np.cumsum(EccentricityDistn)
+
+    # normalise the cumulative distribution of eccentricities
+    EccentricityCumulative /= EccentricityCumulative[-1]
+
+    # plot the normalised distribution of eccentricities 
+    plt.figure()
+    plt.clf()
+    plt.plot(Eccentricities, EccentricityCumulative)
+    plt.xlabel('Eccentricities')
+    plt.ylabel('Cumulative Probability of Eccentricity')
+
+    # mike's way of interpolating values
+    EccentricityInterp = np.interp(np.random.uniform(size = 10000),
+                                  EccentricityCumulative,EccentricityDistn)
+
+    # my way interpolating values
+    EccentricityInterp2 = np.random.choice(np.linspace(0,1,1000),size = 10000, 
+                             p = EccentricityDistn/sum(EccentricityDistn))
+
+
+    # -----------------------------------------------------------------------------
+    # testing making a cumulative distribution - mike's way
+    # -----------------------------------------------------------------------------
+
+    # some pdf
+    test = np.arange(10)
+
+    # cumulative distribution
+    cumdist = np.cumsum(test).astype(float)
+
+    # normalise the values
+    cumdist /= cumdist[-1] 
+
+    # interpolate 10 000 random values onto this distribution
+    vals = np.interp(np.random.uniform(size=10000),cumdist,test) 
+
+    # verify by plotting (should look like original distribution)
+    plt.figure()
+    plt.clf()
+    plt.hist(vals) 
+
+    # -----------------------------------------------------------------------------
+    # testing making a cumulative distribution - my way
+    # -----------------------------------------------------------------------------
+
+    # some pdf
+    test = np.arange(100)
+
+    # interpolate 10 000 random values onto this distribution
+    vals2 = np.random.choice(100,size=10000, p = test/sum(test))
