@@ -9,9 +9,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import Table
 import model_parameters as models
-from mpl_toolkits import mplot3d
-import re
-import astropy.units as u
 
 
 # testing Mike's code for planet simulation
@@ -195,7 +192,9 @@ if __name__=="__main__":
 
     # trial plot simulation with first star
     all_star_radecs = []
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]['parallax_gaia']):
+    current_year = 2021
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]
+                                   ['parallax_gaia']):
         radecs = []
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
@@ -208,7 +207,8 @@ if __name__=="__main__":
             i = models.interpolate_inclination(num=1)[0]
             e = models.interpolate_eccentricity(num=1)[0]
         
-            radecs.append(simulate_orbit(2021,T,a,e,Omega,omega,i,t_k,m_star,m_planet,parallax))
+            radecs.append(simulate_orbit(current_year,T,a,e,Omega,omega,i,t_k,
+                                         m_star,m_planet,parallax))
         all_star_radecs.append(radecs)
 
     chis = np.empty((n_stars, n_sims))
@@ -216,9 +216,5 @@ if __name__=="__main__":
         for j in range(n_sims):
             chis[i,j] = calc_chi_sq(radecs[j],data_30pc_chisq[i])
             
-      #Should search for "significant" chi-squared values     
-      #  for elem in chi:
-      #      if elem > 9.5:
-      #          print(elem, j, data_30pc_chisq[i])
 
     
