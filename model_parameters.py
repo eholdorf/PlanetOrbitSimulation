@@ -259,7 +259,7 @@ def interpolate_period(a, m):
     
     i = 0
     while i < min(len(a),len(m)):
-        T.append((np.sqrt(a[i]**3/m[i])*u.yr).to(u.day).value)
+        T.append((np.sqrt(a[i]**3/m[i])))
         i += 1
     
     return T
@@ -278,7 +278,8 @@ def interpolate_mass(data, ddir='./'):
         DESCRIPTION.
 
     '''
-    f = open(ddir+'AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
+    f=open(ddir+
+           'AModernMeanDwarfStellarColorandEffectiveTemperatureSequence.txt')
     lines = f.readlines()
     
     BpRp = []
@@ -357,10 +358,12 @@ if __name__=="__main__":
     plt.ylabel('Cummulative Occurence')
     plt.title('Cumulative Distribution')
 
-    # normalise the cumulative distribution of planet occurence with Fulton Model
+    # normalise the cumulative distribution of planet occurence 
+    # with Fulton Model
     OccurenceCumulativeDistn /= max(OccurenceCumulativeDistn)
 
-    # plot normalised cumulative distribution of planet occurence with Fulton Model
+    # plot normalised cumulative distribution of planet occurence 
+    # with Fulton Model
     plt.figure()
     plt.clf()
     plt.plot(SemiMajorAxis, OccurenceCumulativeDistn)
