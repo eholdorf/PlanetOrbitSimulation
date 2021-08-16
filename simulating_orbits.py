@@ -147,7 +147,7 @@ if __name__=="__main__":
     test_binary_orbit=False
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
-    n_sims = 1000
+    n_sims = 200
     n_stars = -1 #Use -1 for all stars.
     
     if test_binary_orbit:
@@ -161,14 +161,20 @@ if __name__=="__main__":
 
     # Import the data
     data = Table.read(data_dir + 'HGCA_vEDR3.fits')
-    data_30pc = data[np.where((data['parallax_gaia']>33))[0]]
+    #data_30pc = data[np.where((data['parallax_gaia']>33))[0]]
     data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
                                 (data['chisq']>16) & (data['chisq']<100))[0]]
     bp_rp = []
-    f = open(data_dir + 'bp_rp30.txt','r')                                     # !!
+    f = open(data_dir + 'bp_rps.txt','r')                                     
     for line in f.readlines():
         bp_rp.append(float(line))   
     f.close()
+    bp_rp = np.array(bp_rp)
+    
+    #Cut down the list of stars based on a mass cut
+    in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
+    bp_rp = bp_rp[in_mass_range]
+    data_30pc_chisq = data_30pc_chisq[in_mass_range]
     if n_stars==-1:
         n_stars = len(bp_rp)
 
@@ -183,7 +189,7 @@ if __name__=="__main__":
     # trial plot simulation with first star
     all_star_radecs = []
     current_year = 2021
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc[:n_stars]  # !!
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars] 
                                    ['parallax_gaia']):
         radecs = []
         for i in range(n_sims): 
@@ -200,11 +206,11 @@ if __name__=="__main__":
             radecs.append(simulate_orbit(current_year,T,a,e,Omega,omega,i,t_k,
                                          m_star,m_planet,parallax))
         all_star_radecs.append(radecs)
-
+    all_star_radecs = np.array(all_star_radecs)
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(radecs[j],data_30pc[i])              # !!
+            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])             
             
     for i in range(n_stars):
         for j in range(n_sims):
