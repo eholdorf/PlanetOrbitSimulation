@@ -148,7 +148,8 @@ if __name__=="__main__":
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
     n_sims = 1000
-    n_stars = -1 #Use -1 for all stars.
+    n_stars = 1
+    #Use -1 for all stars.
     
     if test_binary_orbit:
         rho, theta, vr = bo.binary_orbit([2021,365,1,0,0,0,0],
@@ -163,9 +164,9 @@ if __name__=="__main__":
     data = Table.read(data_dir + 'HGCA_vEDR3.fits')
     data_30pc = data[np.where((data['parallax_gaia']>33))[0]]
     data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
-                                (data['chisq']>16) & (data['chisq']<100))[0]]
+                                (data['chisq']>9.5) & (data['chisq']<100))[0]]
     bp_rp = []
-    f = open(data_dir + 'bp_rp30.txt','r')                                     # !!
+    f = open(data_dir + 'bp_rps.txt','r')                                      # !!
     for line in f.readlines():
         bp_rp.append(float(line))   
     f.close()
@@ -182,10 +183,12 @@ if __name__=="__main__":
 
     # trial plot simulation with first star
     all_star_radecs = []
+    all_star_params = []
     current_year = 2021
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc[:n_stars]  # !!
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]  # !!
                                    ['parallax_gaia']):
         radecs = []
+        params = []
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
             m_star = models.interpolate_mass(this_bprp,ddir=data_dir)
@@ -199,15 +202,17 @@ if __name__=="__main__":
         
             radecs.append(simulate_orbit(current_year,T,a,e,Omega,omega,i,t_k,
                                          m_star,m_planet,parallax))
+            params.append([current_year,T,a,e,Omega,omega,i,t_k,m_star,
+                           m_planet, parallax])
         all_star_radecs.append(radecs)
-
+        all_star_params.append(params)
+    
+    f = open('chis.txt','w')
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(radecs[j],data_30pc[i])              # !!
-            
-    for i in range(n_stars):
-        for j in range(n_sims):
-            if chis[i,j]>9.5:
-                print('Star:',i, ' Sim:', j)
+            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])              # !!
+            f.write(str(chis[i,j])+'\n')
+    f.close()
+
     
