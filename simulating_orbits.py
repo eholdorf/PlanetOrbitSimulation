@@ -145,12 +145,8 @@ if __name__=="__main__":
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
     n_sims = 200
-<<<<<<< HEAD
+    
     n_stars = -1 #Use -1 for all stars.
-=======
-    n_stars = -1
-    #Use -1 for all stars.
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
     
     if test_binary_orbit:
         rho, theta, vr = bo.binary_orbit([2021,365,1,0,0,0,0],
@@ -229,3 +225,6 @@ if __name__=="__main__":
     plt.plot(1000/data_30pc_chisq['parallax_gaia'],nums,'k.')
     plt.xlabel('distance')
     plt.ylabel('proportion of chisq > 9.5')
+    
+    planet_freq_in_range = 0.1967
+    
