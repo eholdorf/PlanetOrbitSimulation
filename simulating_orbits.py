@@ -161,20 +161,7 @@ if __name__=="__main__":
         plt.axis('equal')
         plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
 
-<<<<<<< HEAD
-    # Import the data
-    data = Table.read(data_dir + 'HGCA_vEDR3.fits')
-    #data_30pc = data[np.where((data['parallax_gaia']>33))[0]]
-    data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
-                                (data['chisq']>16) & (data['chisq']<100))[0]]
-    bp_rp = []
-    f = open(data_dir + 'bp_rps.txt','r')                                     
-    for line in f.readlines():
-        bp_rp.append(float(line))   
-    f.close()
-    bp_rp = np.array(bp_rp)
-    
-=======
+
     # Import the data, all stars in 30pc
     data = Table.read(data_dir + 'data_30_pc.fits')
     # choose data with desired chisq range
@@ -182,16 +169,12 @@ if __name__=="__main__":
                                 (data['chisq']>9.5) & (data['chisq']<100))[0]]
     bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] for i in 
                       range(len(data_30pc_chisq))])
-
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
+    
     #Cut down the list of stars based on a mass cut
     in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
     bp_rp = bp_rp[in_mass_range]
     data_30pc_chisq = data_30pc_chisq[in_mass_range]
-<<<<<<< HEAD
-=======
-    
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
+
     if n_stars==-1:
         n_stars = len(bp_rp)
 
@@ -199,11 +182,7 @@ if __name__=="__main__":
     all_star_radecs = []
     all_star_params = []
     current_year = 2021
-<<<<<<< HEAD
     for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars] 
-=======
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]  # !!
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
                                    ['parallax_gaia']):
         radecs = []
         params = []
@@ -223,16 +202,6 @@ if __name__=="__main__":
             params.append([current_year,T,a,e,Omega,omega,i,t_k,m_star,
                            m_planet, parallax])
         all_star_radecs.append(radecs)
-<<<<<<< HEAD
-    all_star_radecs = np.array(all_star_radecs)
-    chis = np.empty((n_stars, n_sims))
-    for i in range(n_stars):
-        for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])             
-            
-    for i in range(n_stars):
-        for j in range(n_sims):
-=======
         all_star_params.append(params)
         
     all_star_radecs = np.array(all_star_radecs)
@@ -243,7 +212,6 @@ if __name__=="__main__":
         for j in range(n_sims):
             chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])   # !!
             f.write(str(chis[i,j])+'\n')
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
             if chis[i,j]>9.5:
                 print(i,j,chis[i,j])
     f.close()
