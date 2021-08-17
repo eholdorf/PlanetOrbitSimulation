@@ -40,7 +40,12 @@ plt.legend(loc = 'best')
 
 plt.figure(2)
 plt.clf()
-plt.plot(x, np.sin(x),'k', label = 'Companion Motion')
+plt.plot(x[0:500], np.sin(x[0:500]),'k', label = 'Companion Motion')
+plt.plot([3],[np.sin(3)],'r.')
+plt.annotate('Hipparcos',xy = (3,np.sin(3)+0.07))
+plt.plot([6],[np.sin(6)],'r.')
+plt.annotate('Gaia edr3',xy = (6,np.sin(6)-0.11))
+plt.annotate('',xy=(3,np.sin(3)), xytext=(6,np.sin(6)),arrowprops = dict(arrowstyle='-'))
 plt.ylabel('Right Ascension or Declination')
 plt.xlabel('Time')
 
@@ -52,3 +57,14 @@ plt.clf()
 plt.plot(distances,masses,'k.')
 plt.xlabel('Distance (pc)')
 plt.ylabel(r'Mass ($M_\odot$)')
+
+f = open('chis.txt','r')
+chis = []
+for line in f.readlines():
+    chis.append(float(line))  
+f.close()
+
+plt.figure()
+plt.clf()
+plt.hist(chis,bins = 200)
+#plt.xlim(0,75)
