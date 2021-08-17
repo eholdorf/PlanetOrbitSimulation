@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table
 import model_parameters as models
 import astropy.units as u
+plt.ion()
 
 # testing Mike's code for planet simulation
 '''
@@ -143,14 +144,12 @@ if __name__=="__main__":
     #For testing, you may not want all stars!
     test_binary_orbit=False
     data_dir = './'
-    #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
+    data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
     n_sims = 200
-<<<<<<< HEAD
-    n_stars = -1 #Use -1 for all stars.
-=======
-    n_stars = -1
+    chi2_threshold=9.5
+
     #Use -1 for all stars.
->>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
+    n_stars = -1
     
     if test_binary_orbit:
         rho, theta, vr = bo.binary_orbit([2021,365,1,0,0,0,0],
@@ -164,9 +163,10 @@ if __name__=="__main__":
 
     # Import the data, all stars in 30pc
     data = Table.read(data_dir + 'data_30_pc.fits')
-    # choose data with desired chisq range
+    # choose data with desired chisq range, and also with reasonale
     data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
-                                (data['chisq']>9.5) & (data['chisq']<100))[0]]
+        (data['chisq']>chi2_threshold) & (data['chisq']<100) &
+        (data['pmra_gaia_error']<0.1) & (data['pmdec_gaia_error']<0.1))[0]]
     bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] for i in 
                       range(len(data_30pc_chisq))])
     
@@ -181,7 +181,6 @@ if __name__=="__main__":
     # trial plot simulation with first star
     all_star_radecs = []
     all_star_params = []
-    current_year = 2021
     for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars] 
                                    ['parallax_gaia']):
         radecs = []
@@ -196,23 +195,25 @@ if __name__=="__main__":
             Omega = models.interpolate_Omega(num=1)[0]
             i = models.interpolate_inclination(num=1)[0]
             e = models.interpolate_eccentricity(num=1)[0]
+            T0 = 2000 + np.random.uniform()*T
         
-            radecs.append(simulate_orbit(current_year,T,a,e,Omega,omega,i,t_k,
+            radecs.append(simulate_orbit(T0,T,a,e,Omega,omega,i,t_k,
                                          m_star,m_planet,parallax))
-            params.append([current_year,T,a,e,Omega,omega,i,t_k,m_star,
+            params.append([T0,T,a,e,Omega,omega,i,t_k,m_star,
                            m_planet, parallax])
         all_star_radecs.append(radecs)
         all_star_params.append(params)
         
     all_star_radecs = np.array(all_star_radecs)
+    all_star_params = np.array(all_star_params)
     
     f = open('chisq.txt','w')
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])   # !!
+            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])  
             f.write(str(chis[i,j])+'\n')
-            if chis[i,j]>9.5:
+            if chis[i,j]>chi2_threshold:
                 print(i,j,chis[i,j])
     f.close()
 
@@ -221,11 +222,20 @@ if __name__=="__main__":
     for val in chis:
         a = 0
         for elem in val:
-            if elem > 9.5:
+            if elem > chi2_threshold:
                 a += 1
-        nums.append(a/200)  
+        nums.append(a/n_sims)  
         print('max=',max(val))
+    nums = np.array(nums)
     
+    plt.figure(1)
+    plt.clf()
     plt.plot(1000/data_30pc_chisq['parallax_gaia'],nums,'k.')
     plt.xlabel('distance')
     plt.ylabel('proportion of chisq > 9.5')
+    
+    plt.figure(2)
+    plt.clf()
+    plt.scatter(1000/data_30pc_chisq['parallax_gaia'], all_star_params[:,0,-3], s=nums*30)
+    plt.xlabel('Distance (pc)')
+    plt.ylabel('Stellar Mass')
