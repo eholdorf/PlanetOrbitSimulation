@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import Table
 import model_parameters as models
-
+import astropy.units as u
 
 # testing Mike's code for planet simulation
 '''
@@ -110,20 +110,17 @@ def proper_motion(RA1,DEC1,t1,RA2,DEC2,t2):
     #Inputs must be in mas and years!
     delta_RA = RA2 - RA1
     delta_DEC = DEC2 - DEC1
-    delta_t = round((t2 - t1))
+    delta_t = t2 - t1
     # ask mike which DEC to use in cos
-    mu_RA = delta_RA/delta_t # * np.cos(np.radians(DEC1.to(u.deg)))
+    mu_RA = (delta_RA/delta_t) #* np.cos(((delta_DEC*u.mas).to(u.rad)))
     mu_DEC = delta_DEC/delta_t
-    
-    #mu = np.sqrt(mu_RA**2 - mu_DEC**2)
     
     return [mu_RA, mu_DEC]
 
 def calc_chi_sq(sim,data_row):
     """
     Asks the question: what would the chi-squared have been for this planet if 
-    it had
-    the same uncertainties as the Gaia and HIPPARCOS data?
+    it had the same uncertainties as the Gaia and HIPPARCOS data?
     """
     
     # simulation values of RA and DEC between gaia dates
@@ -137,7 +134,7 @@ def calc_chi_sq(sim,data_row):
     chi2 = 0
     chi2 += (sim_pm_gaia[0]-sim_pm_hg[0])**2/(data_row['pmra_hg_error']**2 + 
                                               data_row['pmra_gaia_error']**2)
-    chi2 += (sim_pm_gaia[1]-sim_pm_hg[1])**2/(data_row['pmdec_hg_error']**2 + 
+    chi2 += (sim_pm_gaia[1]-sim_pm_hg[1])**2/(data_row['pmdec_hg_error']**2+ 
                                               data_row['pmdec_gaia_error']**2)
     
     return chi2
@@ -148,7 +145,12 @@ if __name__=="__main__":
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
     n_sims = 200
+<<<<<<< HEAD
     n_stars = -1 #Use -1 for all stars.
+=======
+    n_stars = -1
+    #Use -1 for all stars.
+>>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
     
     if test_binary_orbit:
         rho, theta, vr = bo.binary_orbit([2021,365,1,0,0,0,0],
@@ -159,6 +161,7 @@ if __name__=="__main__":
         plt.axis('equal')
         plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
 
+<<<<<<< HEAD
     # Import the data
     data = Table.read(data_dir + 'HGCA_vEDR3.fits')
     #data_30pc = data[np.where((data['parallax_gaia']>33))[0]]
@@ -171,27 +174,39 @@ if __name__=="__main__":
     f.close()
     bp_rp = np.array(bp_rp)
     
+=======
+    # Import the data, all stars in 30pc
+    data = Table.read(data_dir + 'data_30_pc.fits')
+    # choose data with desired chisq range
+    data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
+                                (data['chisq']>9.5) & (data['chisq']<100))[0]]
+    bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] for i in 
+                      range(len(data_30pc_chisq))])
+
+>>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
     #Cut down the list of stars based on a mass cut
     in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
     bp_rp = bp_rp[in_mass_range]
     data_30pc_chisq = data_30pc_chisq[in_mass_range]
+<<<<<<< HEAD
+=======
+    
+>>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
     if n_stars==-1:
         n_stars = len(bp_rp)
 
-    #a = models.interpolate_semimajoraxis()
-    #m = models.interpolate_mass(bp_rp, len(bp_rp))
-    #T = models.interpolate_period(a,m)
-    #omega = models.interpolate_omega()
-    #Omega = models.interpolate_Omega()
-    #i = models.interpolate_inclination()
-    #e = models.interpolate_eccentricity()
-
     # trial plot simulation with first star
     all_star_radecs = []
+    all_star_params = []
     current_year = 2021
+<<<<<<< HEAD
     for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars] 
+=======
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]  # !!
+>>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
                                    ['parallax_gaia']):
         radecs = []
+        params = []
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
             m_star = models.interpolate_mass(this_bprp,ddir=data_dir)
@@ -205,7 +220,10 @@ if __name__=="__main__":
         
             radecs.append(simulate_orbit(current_year,T,a,e,Omega,omega,i,t_k,
                                          m_star,m_planet,parallax))
+            params.append([current_year,T,a,e,Omega,omega,i,t_k,m_star,
+                           m_planet, parallax])
         all_star_radecs.append(radecs)
+<<<<<<< HEAD
     all_star_radecs = np.array(all_star_radecs)
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
@@ -214,6 +232,32 @@ if __name__=="__main__":
             
     for i in range(n_stars):
         for j in range(n_sims):
-            if chis[i,j]>9.5:
-                print('Star:',i, ' Sim:', j)
+=======
+        all_star_params.append(params)
+        
+    all_star_radecs = np.array(all_star_radecs)
     
+    f = open('chisq.txt','w')
+    chis = np.empty((n_stars, n_sims))
+    for i in range(n_stars):
+        for j in range(n_sims):
+            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])   # !!
+            f.write(str(chis[i,j])+'\n')
+>>>>>>> 85a1dbfb6a467591a181d902bbceb097b17af28b
+            if chis[i,j]>9.5:
+                print(i,j,chis[i,j])
+    f.close()
+
+    
+    nums = []
+    for val in chis:
+        a = 0
+        for elem in val:
+            if elem > 9.5:
+                a += 1
+        nums.append(a/200)  
+        print('max=',max(val))
+    
+    plt.plot(1000/data_30pc_chisq['parallax_gaia'],nums,'k.')
+    plt.xlabel('distance')
+    plt.ylabel('proportion of chisq > 9.5')
