@@ -139,8 +139,8 @@ if __name__=="__main__":
     #For testing, you may not want all stars!
     test_binary_orbit=False
     data_dir = './'
-    data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
-    n_sims = 200
+    #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
+    n_sims = 1000
     chi2_threshold=9.5
 
     #Use -1 for all stars.
@@ -180,10 +180,10 @@ if __name__=="__main__":
                                    ['parallax_gaia']):
         radecs = []
         params = []
+        m_star = models.interpolate_mass(this_bprp,ddir=data_dir)
+        t_k = np.array([1991.25,2015.0,2017.0])
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
-            m_star = models.interpolate_mass(this_bprp,ddir=data_dir)
-            t_k = np.array([1991.25,2015.0,2017.0])
             a = models.interpolate_semimajoraxis(num=1)[0]
             T = models.interpolate_period([a],[m_star])[0]
             omega = models.interpolate_omega(num=1)[0]
@@ -234,3 +234,5 @@ if __name__=="__main__":
     plt.scatter(1000/data_30pc_chisq['parallax_gaia'], all_star_params[:,0,-3], s=nums*30)
     plt.xlabel('Distance (pc)')
     plt.ylabel('Stellar Mass')
+    
+    planet_frequency = 0.1967
