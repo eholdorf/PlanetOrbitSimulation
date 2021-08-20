@@ -86,12 +86,14 @@ def simulate_orbit(time= 0, T=0, a=0, e=0, Omega=0, omega=0, i=0, dates=0, m=0,
         plt.figure()
         plt.clf()
         plt.axis('equal')
-        plt.plot(rho*np.cos(np.radians(theta)),rho*np.sin(np.radians(theta)),'k')
+        plt.plot(rho*np.cos(np.radians(theta)),rho*np.sin(np.radians(theta)),
+                 'k')
         
         plt.figure()
         plt.clf()
         ax = plt.axes(projection='3d')
-        ax.plot(rho*np.cos(np.radians(theta)),rho*np.sin(np.radians(theta)),'k')
+        ax.plot(rho*np.cos(np.radians(theta)),rho*np.sin(np.radians(theta)),
+                'k')
         ax.plot([0],[0],[0],'o', color = 'orange')
         
     #Convert planet separation in au to star separation from center of mass
@@ -157,18 +159,21 @@ if __name__=="__main__":
 
 
     # Import the data, all stars in 30pc
-    data = Table.read(data_dir + 'data_30_pc.fits')
-    # choose data with desired chisq range, and also with reasonale
-    data_30pc_chisq = data[np.where((data['parallax_gaia']>33) & 
-        (data['chisq']>chi2_threshold) & (data['chisq']<100) &
-        (data['pmra_gaia_error']<0.1) & (data['pmdec_gaia_error']<0.1))[0]]
-    bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] for i in 
-                      range(len(data_30pc_chisq))])
+    data_30pc = Table.read(data_dir + 'data_30_pc.fits')
+    bp_rp = np.array([data_30pc[i]['bp_rp'] for i in range(len(data_30pc))])
     
     #Cut down the list of stars based on a mass cut
     in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
     bp_rp = bp_rp[in_mass_range]
-    data_30pc_chisq = data_30pc_chisq[in_mass_range]
+    data_30pc = data_30pc[in_mass_range]
+    # choose data with desired chisq range, and also with reasonale
+    data_30pc_chisq = data_30pc[np.where((data_30pc['parallax_gaia']>33) & 
+        (data_30pc['chisq']>chi2_threshold) & (data_30pc['chisq']<100) &
+        (data_30pc['pmra_gaia_error']<0.1) & 
+        (data_30pc['pmdec_gaia_error']<0.1))[0]]
+    # have this line if want to restrict the data set
+    bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] 
+                      for i in range(len(data_30pc_chisq))])
 
     if n_stars==-1:
         n_stars = len(bp_rp)
@@ -176,7 +181,7 @@ if __name__=="__main__":
     # trial plot simulation with first star
     all_star_radecs = []
     all_star_params = []
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars] 
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]  # !!
                                    ['parallax_gaia']):
         radecs = []
         params = []
@@ -211,28 +216,3 @@ if __name__=="__main__":
             if chis[i,j]>chi2_threshold:
                 print(i,j,chis[i,j])
     f.close()
-
-    
-    nums = []
-    for val in chis:
-        a = 0
-        for elem in val:
-            if elem > chi2_threshold:
-                a += 1
-        nums.append(a/n_sims)  
-        print('max=',max(val))
-    nums = np.array(nums)
-    
-    plt.figure(1)
-    plt.clf()
-    plt.plot(1000/data_30pc_chisq['parallax_gaia'],nums,'k.')
-    plt.xlabel('distance')
-    plt.ylabel('proportion of chisq > 9.5')
-    
-    plt.figure(2)
-    plt.clf()
-    plt.scatter(1000/data_30pc_chisq['parallax_gaia'], all_star_params[:,0,-3], s=nums*30)
-    plt.xlabel('Distance (pc)')
-    plt.ylabel('Stellar Mass')
-    
-    planet_frequency = 0.1967
