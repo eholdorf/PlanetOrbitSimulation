@@ -172,8 +172,8 @@ if __name__=="__main__":
         (data_30pc['pmra_gaia_error']<0.1) & 
         (data_30pc['pmdec_gaia_error']<0.1))[0]]
     # have this line if want to restrict the data set
-    bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] 
-                      for i in range(len(data_30pc_chisq))])
+   # bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                             # !!
+   #                   for i in range(len(data_30pc_chisq))])
 
     if n_stars==-1:
         n_stars = len(bp_rp)
@@ -181,7 +181,7 @@ if __name__=="__main__":
     # trial plot simulation with first star
     all_star_radecs = []
     all_star_params = []
-    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc_chisq[:n_stars]  # !!
+    for this_bprp, parallax in zip(bp_rp[:n_stars], data_30pc[:n_stars]  # !!
                                    ['parallax_gaia']):
         radecs = []
         params = []
@@ -211,8 +211,17 @@ if __name__=="__main__":
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc_chisq[i])  
+            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc[i])   #!!
             f.write(str(chis[i,j])+'\n')
-            if chis[i,j]>chi2_threshold:
-                print(i,j,chis[i,j])
+            #if chis[i,j]>chi2_threshold:
+            #    print(i,j,chis[i,j])
     f.close()
+    
+planet_frequency = 0.1968
+
+all_star_planet_detections = np.empty((n_stars,n_sims))
+
+for i in range(n_stars):
+    number_detections = np.sum(chis[i,:]<9.5)/n_sims * planet_frequency
+    all_star_planet_detections.append(number_detections)
+    

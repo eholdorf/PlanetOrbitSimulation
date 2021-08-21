@@ -27,8 +27,8 @@ data_30pc_chisq = data_30pc[np.where((data_30pc['parallax_gaia']>33) &
     (data_30pc['pmra_gaia_error']<0.1) & 
     (data_30pc['pmdec_gaia_error']<0.1))[0]]
 # have this line if want to restrict the data set
-bp_rp = np.array([data_30pc_chisq[i]['bp_rp'] 
-                  for i in range(len(data_30pc_chisq))])
+#bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                                   # !!
+#                  for i in range(len(data_30pc_chisq))])
     
 x = np.linspace(0,20,1000)
 plt.figure(1)
@@ -56,8 +56,8 @@ plt.annotate('',xy=(3,np.sin(3)), xytext=(6,np.sin(6)),
 plt.ylabel('Right Ascension or Declination')
 plt.xlabel('Time')
 
-distances = [1000/data_30pc_chisq[i]['parallax_gaia'] 
-             for i in range(len(data_30pc_chisq))]
+distances = [1000/data_30pc[i]['parallax_gaia']                           #!!               
+             for i in range(len(data_30pc))]                                #!!
 masses = models.interpolate_mass(bp_rp)
 
 plt.figure(3)
@@ -99,16 +99,91 @@ nums = np.array(nums)
 
 plt.figure(5)
 plt.clf()
-plt.plot(1000/data_30pc_chisq['parallax_gaia'],nums,'k.')
+plt.plot(1000/data_30pc['parallax_gaia'],nums,'k.')                             #!!
 plt.xlabel('distance')
 plt.ylabel('proportion of chisq > 9.5')
 
 plt.figure(6)
 plt.clf()
-plt.scatter(1000/data_30pc_chisq['parallax_gaia'], masses, 
+plt.scatter(1000/data_30pc['parallax_gaia'], masses, c = 'k',                     #!!
             s=nums*30)
 plt.xlabel('Distance (pc)')
 plt.ylabel('Stellar Mass') 
 
 
 planet_frequency = 0.1968
+
+all_star_planet_detections = []
+
+for i in range(n_stars):
+    number_detections = np.sum(chis[i,:]<9.5)/n_sims * planet_frequency 
+    all_star_planet_detections.append(number_detections)
+
+all_star_planet_detections = np.array(all_star_planet_detections)
+
+plt.figure(7)
+plt.clf()
+plt.plot(distances,all_star_planet_detections,'k.')
+plt.xlabel('Distance (pc)')
+plt.ylabel('Number of Detections')
+
+exoplanet_distributions = Table.read('PS_2021.08.20_22.02.50.csv')
+
+transit_distribution = exoplanet_distributions[np.where(
+    exoplanet_distributions['discoverymethod']=='Transit')]
+
+microlensing_distribution = exoplanet_distributions[np.where(
+    exoplanet_distributions['discoverymethod']=='Microlensing')]
+
+direct_imaging_distribution = exoplanet_distributions[np.where(
+    exoplanet_distributions['discoverymethod']=='Imaging')]
+
+radial_velocity_distribution = exoplanet_distributions[np.where(
+    exoplanet_distributions['discoverymethod']=='Radial Velocity')]
+
+plt.figure(8)
+plt.clf()
+plt.hist(transit_distribution['pl_orbsmax'],range=(0,1),bins = 75)
+plt.xlabel('Semi-Major Axis (AU)')
+plt.ylabel('Count')
+#plt.savefig('transit_distribution.pdf')
+
+plt.figure(9)
+plt.clf()
+plt.hist(microlensing_distribution['pl_orbsmax'],bins = 17)
+plt.xlabel('Semi-Major Axis (AU)')
+plt.ylabel('Count')
+#plt.savefig('microlensing_distribution.pdf')
+
+plt.figure(10)
+plt.clf()
+plt.hist(direct_imaging_distribution['pl_orbsmax'],range = (0,30),bins = 10)
+plt.xlabel('Semi-Major Axis (AU)')
+plt.ylabel('Count')
+#plt.savefig('direct_imaging_distribution.pdf')
+
+plt.figure(11)
+plt.clf()
+plt.hist(radial_velocity_distribution['pl_orbsmax'],range = (0,5),bins = 30)
+plt.xlabel('Semi-Major Axis (AU)')
+plt.ylabel('Count')
+#plt.savefig('radial_velocity_distribution.pdf')
+
+fig, axs = plt.subplots(2,2)
+axs[0,0].hist(direct_imaging_distribution['pl_orbsmax'],range = (0,30),
+              bins = 10)
+axs[0,0].set_title('Direct Imaging')
+axs[0,1].hist(radial_velocity_distribution['pl_orbsmax'],range = (0,5),
+              bins = 10)
+axs[0,1].set_title('Radial Velocity')
+axs[1,0].hist(transit_distribution['pl_orbsmax'],range=(0,1),bins = 75)
+axs[1,0].set_title('Transit')
+axs[1,1].hist(microlensing_distribution['pl_orbsmax'],bins = 17)
+axs[1,1].set_title('Microlensing')
+
+for ax in axs.flat:
+    ax.set(xlabel='Semi-Major Axis (AU)', ylabel='Count')
+fig.tight_layout()
+
+#fig.savefig('semi_major_axis_distn.pdf')
+
