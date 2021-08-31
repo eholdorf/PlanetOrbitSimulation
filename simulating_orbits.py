@@ -205,7 +205,7 @@ if __name__=="__main__":
         all_star_params.append(params)
         
     all_star_radecs = np.array(all_star_radecs)
-    all_star_params = np.array(all_star_params)
+    all_star_params = np.array(all_star_params, dtype = object)
     
     f = open('chisq.txt','w')
     chis = np.empty((n_stars, n_sims))
@@ -219,7 +219,7 @@ if __name__=="__main__":
     
 planet_frequency = 0.1968
 
-all_star_planet_detections = np.empty((n_stars,n_sims))
+all_star_planet_detections = []
 
 for i in range(n_stars):
     number_detections = np.sum(chis[i,:]<9.5)/n_sims * planet_frequency

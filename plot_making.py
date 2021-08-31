@@ -7,7 +7,6 @@ Created on Sat Aug 14 15:56:22 2021
 import model_parameters as models
 import numpy as np
 import matplotlib.pyplot as plt
-import astropy.io.fits as pyfits
 from astropy.table import Table
 
 # Import the data, all stars in 30pc
@@ -65,6 +64,7 @@ plt.clf()
 plt.plot(distances,masses,'k.')
 plt.xlabel('Distance (pc)')
 plt.ylabel(r'Mass ($M_\odot$)')
+#plt.savefig('mass_distance_stars_used.pdf')
 
 f = open('chisq.txt','r')
 # change these values depending on what simulation run, assuming all stars
@@ -109,14 +109,15 @@ plt.scatter(1000/data_30pc['parallax_gaia'], masses, c = 'k',                   
             s=nums*30)
 plt.xlabel('Distance (pc)')
 plt.ylabel('Stellar Mass') 
+#plt.savefig('mass_distance_stars_used.pdf')
 
 
-planet_frequency = 0.1968
+planet_frequency = 0.1968 
 
 all_star_planet_detections = []
 
 for i in range(n_stars):
-    number_detections = np.sum(chis[i,:]<9.5)/n_sims * planet_frequency 
+    number_detections = np.sum(chis[i,:]>9.5)/n_sims * planet_frequency 
     all_star_planet_detections.append(number_detections)
 
 all_star_planet_detections = np.array(all_star_planet_detections)
@@ -126,6 +127,7 @@ plt.clf()
 plt.plot(distances,all_star_planet_detections,'k.')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Number of Detections')
+#plt.savefig('number_detections.pdf')
 
 exoplanet_distributions = Table.read('PS_2021.08.20_22.02.50.csv')
 
