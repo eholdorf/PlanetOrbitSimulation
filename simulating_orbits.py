@@ -143,7 +143,7 @@ if __name__=="__main__":
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
     n_sims = 1000
-    chi2_threshold=9.5
+    chi2_threshold=10
 
     #Use -1 for all stars.
     n_stars = -1
@@ -157,7 +157,19 @@ if __name__=="__main__":
         plt.axis('equal')
         plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
 
-
+    # hip ids for binaries
+    # binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
+    #                          18512,21482,26501,29568,31246,32723,41211,54155,
+    #                          56242,56838,60370,64583,77358,79607,86282,92919,
+    #                          93926,94336,96895,97640,97944,109812,113421])
+    # # hip ids for binaries, and likely binaries
+    # binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
+    #                           18512,21482,26501,29568,31246,32723,41211,54155,
+    #                           56242,56838,60370,64583,77358,79607,86282,92919,
+    #                           93926,94336,96895,97640,97944,109812,113421,
+    #                           22431,43410,45836,51138,54922,54952,56280,
+    #                           60074,95730,111686,113701,30314])
+    
     # Import the data, all stars in 30pc
     data_30pc = Table.read(data_dir + 'data_30_pc.fits')
     bp_rp = np.array([data_30pc[i]['bp_rp'] for i in range(len(data_30pc))])
@@ -166,9 +178,19 @@ if __name__=="__main__":
     in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
     bp_rp = bp_rp[in_mass_range]
     data_30pc = data_30pc[in_mass_range]
+    # not_binary=np.array([True if data_30pc[i]['hip_id'] not in binary_hip_id 
+    #                      else False for i in range(len(data_30pc))])
+    
+    # data_30pc = data_30pc[not_binary]
+    
     # choose data with desired chisq range, and also with reasonale
-    data_30pc_chisq = data_30pc[np.where((data_30pc['parallax_gaia']>33) & 
+    data_30pc_chisq_10_100 = data_30pc[np.where((data_30pc['parallax_gaia']>33) & 
         (data_30pc['chisq']>chi2_threshold) & (data_30pc['chisq']<100) &
+        (data_30pc['pmra_gaia_error']<0.1) & 
+        (data_30pc['pmdec_gaia_error']<0.1))[0]]
+    
+    data_30pc_chisq_100_1000 = data_30pc[np.where((data_30pc['parallax_gaia']>33) & 
+        (data_30pc['chisq']>100) & (data_30pc['chisq']<1000) &
         (data_30pc['pmra_gaia_error']<0.1) & 
         (data_30pc['pmdec_gaia_error']<0.1))[0]]
     # have this line if want to restrict the data set
@@ -176,7 +198,7 @@ if __name__=="__main__":
    #                   for i in range(len(data_30pc_chisq))])
 
     if n_stars==-1:
-        n_stars = len(bp_rp)
+        n_stars = len(data_30pc)                                                #!!
 
     # trial plot simulation with first star
     all_star_radecs = []
@@ -199,22 +221,22 @@ if __name__=="__main__":
         
             radecs.append(simulate_orbit(T0,T,a,e,Omega,omega,i,t_k,
                                          m_star,m_planet,parallax))
-            params.append([T0,T,a,e,Omega,omega,i,t_k,m_star,
-                           m_planet, parallax])
+            #param = np.array([T0,T,a,e,Omega,omega,i,t_k,m_star,m_planet, 
+             #                 parallax],dtype = object)
+            param = np.array([a,m_planet])
+            
+            params.append(param)
         all_star_radecs.append(radecs)
-        all_star_params.append(params)
-        
+        all_star_params.append(params) 
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    
-    f = open('chisq.txt','w')
+    np.save('sim_params_with_binary.npy',all_star_params)                       #!!
+    f = open('chisq_with_binary.txt','w')                                       #!!
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
             chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc[i])   #!!
             f.write(str(chis[i,j])+'\n')
-            #if chis[i,j]>chi2_threshold:
-            #    print(i,j,chis[i,j])
     f.close()
     
 planet_frequency = 0.1968
@@ -222,6 +244,6 @@ planet_frequency = 0.1968
 all_star_planet_detections = []
 
 for i in range(n_stars):
-    number_detections = np.sum(chis[i,:]<9.5)/n_sims * planet_frequency
+    number_detections = np.sum(chis[i,:]>chi2_threshold)/n_sims * planet_frequency
     all_star_planet_detections.append(number_detections)
     
