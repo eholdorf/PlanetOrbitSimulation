@@ -14,17 +14,17 @@ data_dir = './'
 chi2_threshold = 10
 
 # hip ids for binaries
-# binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
-#                          18512,21482,26501,29568,31246,32723,41211,54155,
-#                          56242,56838,60370,64583,77358,79607,86282,92919,
-#                          93926,94336,96895,97640,97944,109812,113421])
-# # hip ids for binaries, and likely binaries
-binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
-                          18512,21482,26501,29568,31246,32723,41211,54155,
-                          56242,56838,60370,64583,77358,79607,86282,92919,
-                          93926,94336,96895,97640,97944,109812,113421,
-                          22431,43410,45836,51138,54922,54952,56280,
-                          60074,95730,111686,113701,30314])
+binary_hip_id = np.array([1292,1598,3588,5110,5260,12158,13081,13642,16846,
+                         17666,17749,18512,20552,21482,22431,22715,24783,
+                         26501,29568,31246,32723,38931,39826,41211,42173,
+                         42697,43233,43410,43422,43557,44295,45343,45836,
+                         47080,48133,51138,51248,51525,54155,54922,54952,
+                         56242,56280,56452,56809,56838,59707,60074,60370,
+                         60759,64532,64583,65343,66238,67308,69965,73184,
+                         73633,73941,79492,79607,79702,80008,80925,83020,
+                         86282,91605,92919,93926,94336,95730,96895,97640,
+                         97944,98677,103768,104214,108162,109812,110109,
+                         111686,113421,113701,117542,118310,])
  
 #Import the data, all stars in 30pc
 data_30pc = Table.read(data_dir + 'data_30_pc.fits')
@@ -32,7 +32,18 @@ data_30pc = Table.read(data_dir + 'data_30_pc.fits')
 #                       else False for i in range(len(data_30pc))])
  
 # data_30pc = data_30pc[not_binary]
+
+
+# have this line if want to restrict the data set
+# bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                             # !!
+#                   for i in range(len(data_30pc_chisq))])
+bp_rp = np.array([data_30pc[i]['bp_rp'] for i in range(len(data_30pc))])
  
+#Cut down the list of stars based on a mass cut
+in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
+bp_rp = bp_rp[in_mass_range]
+data_30pc = data_30pc[in_mass_range]
+
 # choose data with desired chisq range, and also with reasonale
 data_30pc_chisq_10_100 = data_30pc[np.where((data_30pc['parallax_gaia']>33) & 
     (data_30pc['chisq']>chi2_threshold) & (data_30pc['chisq']<100) &
@@ -48,16 +59,6 @@ data_30pc_chisq = data_30pc[np.where((data_30pc['parallax_gaia']>33) &
     (data_30pc['chisq']>chi2_threshold) & (data_30pc['chisq']<1000) &
     (data_30pc['pmra_gaia_error']<0.1) & 
     (data_30pc['pmdec_gaia_error']<0.1))[0]]
-
-# have this line if want to restrict the data set
-# bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                             # !!
-#                   for i in range(len(data_30pc_chisq))])
-bp_rp = np.array([data_30pc[i]['bp_rp'] for i in range(len(data_30pc))])
- 
-#Cut down the list of stars based on a mass cut
-in_mass_range = (bp_rp >  0.33) & (bp_rp < 1.84)
-bp_rp = bp_rp[in_mass_range]
-data_30pc = data_30pc[in_mass_range]
 
 x = np.linspace(0,20,1000)
 plt.figure(1)
@@ -156,7 +157,7 @@ all_star_planet_detections = np.array(all_star_planet_detections)
 
 plt.figure(7)
 plt.clf()
-plt.plot(distances,all_star_planet_detections/0.1968,'k.')
+plt.plot(distances,all_star_planet_detections/planet_frequency,'k.')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Likihood of Planet Detection')
 #plt.savefig('number_detections.pdf')
@@ -219,10 +220,10 @@ for ax in axs.flat:
     ax.set(xlabel='Semi-Major Axis (AU)', ylabel='Count')
 fig.tight_layout()
 
-#fig.savefig('semi_major_axis_distn.pdf')
+# #fig.savefig('semi_major_axis_distn.pdf')
 
-# not_binary=np.array([True if data_30pc_chisq[i]['hip_id'] not in binary_hip_id 
-#                        else False for i in range(len(data_30pc_chisq))])
+not_binary=np.array([True if data_30pc_chisq[i]['hip_id'] not in binary_hip_id 
+                        else False for i in range(len(data_30pc_chisq))])
  
 # data_30pc_chisq = data_30pc_chisq[not_binary]
 chi_sq_gaia = data_30pc_chisq['chisq']
@@ -248,7 +249,7 @@ plt.plot([2,2],[0,1],'k')
 plt.legend(['$\chi^2$ = 100','Gaia','Simulation'])
 plt.xlabel('log($\chi^2$)')
 plt.ylabel('Density')
-plt.title('$\chi^2$ Distribution With Binaries')
+plt.title('$\chi^2$ Distribution Without Binaries')
 plt.xlim(1,4)
 #plt.savefig('chi_sq_distn_without_binary.pdf')
 
@@ -332,3 +333,48 @@ plt.colorbar(label =r'$B_p - R_p$')
 # plt.xlabel('Distance (pc)')
 # plt.ylabel(r'Stellar Mass ($M_\odot$)') 
 # plt.savefig('mass_distance_stars_used.pdf')
+
+
+f = open('chisq_for_plot.txt','r')                                                       #!!
+# change these values depending on what simulation run, assuming all stars
+# and 1000 simulations run on each
+n_stars = len(data_30pc)
+n_sims = 10
+chis_plot = np.zeros((n_stars, n_sims))
+i = 0
+j = 0
+for line in f.readlines():
+    chis_plot[i,j] = float(line) 
+    j += 1
+    if j >= n_sims:
+        i += 1
+        j = 0
+f.close()
+
+params_for_plot = np.load('sim_params_for_plot.npy',allow_pickle = True)
+a = []
+m_p = []
+
+# only keep the stars that have a min chi sq that is greater than 9.5
+above_threshold = [True if max(chis[i])>chi2_threshold else False for i in 
+                   range(len(chis))]
+# limit data
+detections = data_30pc[above_threshold]
+# limit chi sq
+detection_chis = chis[above_threshold]
+
+d = [1000/detections[i]['parallax_gaia'] for i in range(len(detections))]
+params_for_plot = params_for_plot[above_threshold]
+
+for i in range(len(params_for_plot)):
+    a.append(params_for_plot[i][0][0])
+    m_p.append(params_for_plot[i][1][1])
+        
+m_p = np.array(m_p)
+plt.figure(16)
+plt.clf()
+plt.scatter(d,a,s=(m_p*10000),c=detections['bp_rp'],cmap = 'RdYlBu')
+plt.xlabel('Distance (pc)')
+plt.ylabel('Semi-Major Axis (AU)')
+plt.colorbar(label =r'$B_p - R_p$')
+#plt.savefig('distance_vs_a.pdf')

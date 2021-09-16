@@ -230,8 +230,8 @@ if __name__=="__main__":
         all_star_params.append(params) 
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params_with_binary.npy',all_star_params)                       #!!
-    f = open('chisq_with_binary.txt','w')                                       #!!
+    np.save('sim_params.npy',all_star_params)                       #!!
+    f = open('chisq.txt','w')                                       #!!
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):

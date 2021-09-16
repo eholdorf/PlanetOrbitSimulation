@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from astropy.table import Table
 import astropy.units as u
 import astropy.constants as c
+import model_parameters
 plt.ion()
 
 def position_angle(ra_pm_diff, dec_pm_diff):
@@ -27,16 +28,31 @@ def position_angle(ra_pm_diff, dec_pm_diff):
         The position angle of the system
 
     '''
-    ra_pm_diff = ra_pm_diff.to(u.rad)
-    dec_pm_diff = dec_pm_diff.to(u.rad)
+    ra_pm_diff = ra_pm_diff.to(u.rad/u.yr)
+    dec_pm_diff = dec_pm_diff.to(u.rad/u.yr)
     return np.degrees(np.arctan2(ra_pm_diff, dec_pm_diff))
 
 def acceleration(ra_pm_diff, dec_pm_diff, dt, distance):
-    ra_pm_diff = ra_pm_diff.to(u.rad)/u.rad
-    dec_pm_diff = dec_pm_diff.to(u.rad)/u.rad
-    return (distance * np.sqrt(ra_pm_diff**2 + dec_pm_diff**2)/(dt**2)).to(
+    ra_pm_diff = ra_pm_diff.to(u.rad/u.s)/u.rad
+    dec_pm_diff = dec_pm_diff.to(u.rad/u.s)/u.rad
+    return (distance * np.sqrt(ra_pm_diff**2 + dec_pm_diff**2)/(dt)).to(
         u.nm/u.s**2)
 
+def newton_acceleration(M,separation,d):
+    return (c.G*M/(separation*d)**2).to(u.nm/(u.rad**2 * u.s**2))
+
+def compare_acceleration(hip_id,bp_rp,sep):
+    star = data_30pc[np.where(data_30pc['hip_id']==hip_id)]
+    ra_pm_diff = (star['pmra_gaia_error'] - star['pmra_hg_error'])*u.mas/u.yr
+    dec_pm_diff = (star['pmdec_gaia_error'] - star['pmdec_hg_error'])*u.mas/u.yr
+    dt = (2016.0 - np.mean([1991.25,2016.0]))*u.year
+    distance = (1000/star['parallax_gaia'])*u.pc
+    accel = acceleration(ra_pm_diff, dec_pm_diff,dt, distance)
+    M = model_parameters.interpolate_mass([bp_rp])[0]*u.M_sun
+    accel_N = newton_acceleration(M,sep,distance)
+    
+    print(accel,accel_N)
+    
 if __name__=="__main__":
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
@@ -66,8 +82,8 @@ if __name__=="__main__":
     position_angles = []
     
     for star in data_30pc_chisq:
-        ra_pm_diff = (star['pmra_gaia_error'] - star['pmra_hg_error'])*u.mas
-        dec_pm_diff = (star['pmdec_gaia_error'] - star['pmdec_hg_error'])*u.mas
+        ra_pm_diff = (star['pmra_gaia_error'] - star['pmra_hg_error'])*u.mas/u.yr
+        dec_pm_diff = (star['pmdec_gaia_error'] - star['pmdec_hg_error'])*u.mas/u.yr
         
         distance = (1000/star['parallax_gaia'])*u.pc
         
