@@ -378,3 +378,14 @@ plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
 #plt.savefig('distance_vs_a.pdf')
+
+plt.figure(17)
+plt.clf()
+plt.scatter(1000/data_30pc['parallax_gaia'],data_30pc['pmdec_gaia_error'],
+            c = 'red',s=20,label=r'$\mu_{dec}$ Error')
+plt.scatter(1000/data_30pc['parallax_gaia'],data_30pc['pmra_gaia_error'],
+            c= 'black',s=20,alpha = 0.5,label=r'$\mu_{RA}$ Error')
+plt.legend(loc='best')
+plt.xlabel('Distance (pc)')
+#plt.savefig('proper_motion_error.pdf')
+plt.ylabel(r'Error (mas yr$^{-1}$)')
