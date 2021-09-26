@@ -24,7 +24,7 @@ binary_hip_id = np.array([1292,1598,3588,5110,5260,12158,13081,13642,16846,
                          73633,73941,79492,79607,79702,80008,80925,83020,
                          86282,91605,92919,93926,94336,95730,96895,97640,
                          97944,98677,103768,104214,108162,109812,110109,
-                         111686,113421,113701,117542,118310,])
+                         111686,113421,113701,117542,118310,77358])
  
 #Import the data, all stars in 30pc
 data_30pc = Table.read(data_dir + 'data_30_pc.fits')
@@ -225,7 +225,7 @@ fig.tight_layout()
 not_binary=np.array([True if data_30pc_chisq[i]['hip_id'] not in binary_hip_id 
                         else False for i in range(len(data_30pc_chisq))])
  
-# data_30pc_chisq = data_30pc_chisq[not_binary]
+#data_30pc_chisq = data_30pc_chisq[not_binary]
 chi_sq_gaia = data_30pc_chisq['chisq']
 chi_sq_sim = []
 for star in chis:
@@ -247,11 +247,11 @@ plt.clf()
 plt.hist([chi_sq_gaia,chi_sq_sim],density = True)
 plt.plot([2,2],[0,1],'k')
 plt.legend(['$\chi^2$ = 100','Gaia','Simulation'])
-plt.xlabel('log($\chi^2$)')
+plt.xlabel('log$_{10}$($\chi^2$)')
 plt.ylabel('Density')
-plt.title('$\chi^2$ Distribution Without Binaries')
+plt.title('$\chi^2$ Distribution With Binaries')
 plt.xlim(1,4)
-#plt.savefig('chi_sq_distn_without_binary.pdf')
+#plt.savefig('chi_sq_distn_with_binary.pdf')
 
 params = np.load('sim_params_with_binary.npy',allow_pickle = True)
 a = []
@@ -355,7 +355,7 @@ params_for_plot = np.load('sim_params_for_plot.npy',allow_pickle = True)
 a = []
 m_p = []
 
-# only keep the stars that have a min chi sq that is greater than 9.5
+# only keep the stars that have a min chi sq that is greater than 10
 above_threshold = [True if max(chis[i])>chi2_threshold else False for i in 
                    range(len(chis))]
 # limit data
@@ -373,11 +373,11 @@ for i in range(len(params_for_plot)):
 m_p = np.array(m_p)
 plt.figure(16)
 plt.clf()
-plt.scatter(d,a,s=(m_p*10000),c=detections['bp_rp'],cmap = 'RdYlBu')
+plt.scatter(d,a,s=(m_p*10000),c=detections['bp_rp'],cmap = 'RdYlBu_r')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
-#plt.savefig('distance_vs_a.pdf')
+plt.savefig('distance_vs_a.pdf')
 
 plt.figure(17)
 plt.clf()
@@ -389,3 +389,16 @@ plt.legend(loc='best')
 plt.xlabel('Distance (pc)')
 #plt.savefig('proper_motion_error.pdf')
 plt.ylabel(r'Error (mas yr$^{-1}$)')
+
+plt.figure(18)
+plt.clf()
+binary=np.array([True if data_30pc_chisq[i]['hip_id'] in binary_hip_id 
+                        else False for i in range(len(data_30pc_chisq))])
+ 
+data_30pc_chisq_binary = data_30pc_chisq[binary]
+plt.hist(np.log10(data_30pc_chisq_binary['chisq']))
+plt.plot([2,2],[0,13],'k',label = r'$\chi^2$ = 100')
+plt.xlabel('log$_{10}$($\chi^2$)')
+plt.ylabel('Number of Binaries')
+plt.legend()
+#plt.savefig('removed_binary_chisq.pdf')
