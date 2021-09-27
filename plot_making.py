@@ -356,9 +356,13 @@ a = []
 m_p = []
 
 # only keep the stars that have a min chi sq that is greater than 10
-above_threshold = [True if max(chis[i])>chi2_threshold else False for i in 
-                   range(len(chis))]
+#above_threshold = [True if max(chis[i])>chi2_threshold else False for i in 
+#                   range(len(chis))]
+best_planet = np.argmax(chis_plot, axis=1)
+above_threshold = np.max(chis_plot, axis=1)>25 #chi2_threshold
+
 # limit data
+best_planet = best_planet[above_threshold]
 detections = data_30pc[above_threshold]
 # limit chi sq
 detection_chis = chis[above_threshold]
@@ -367,9 +371,10 @@ d = [1000/detections[i]['parallax_gaia'] for i in range(len(detections))]
 params_for_plot = params_for_plot[above_threshold]
 
 for i in range(len(params_for_plot)):
-    a.append(params_for_plot[i][0][0])
-    m_p.append(params_for_plot[i][1][1])
-        
+    a.append(params_for_plot[i][best_planet[i]][0])
+    m_p.append(params_for_plot[i][best_planet[i]][1])
+
+#!!! This is the mysterious figure !!!        
 m_p = np.array(m_p)
 plt.figure(16)
 plt.clf()
@@ -378,6 +383,13 @@ plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
 plt.savefig('distance_vs_a.pdf')
+#!!! MJI Lets have a look at some of those mysterious systems.
+#data_30pc is all planets
+#above_threshold is True if at least 1 planet is above the threshold for that
+#star. 
+#Do these match? params_for_plot is only a and m_p from the simulation.
+#plt.semilogy(params_for_plot[:,:,0].flatten(), chis_plot.flatten(),'.')
+#No change between 3 and 12 AU...
 
 plt.figure(17)
 plt.clf()
