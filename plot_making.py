@@ -99,7 +99,7 @@ plt.xlabel('Distance (pc)')
 plt.ylabel(r'Mass ($M_\odot$)')
 #plt.savefig('mass_distance_stars_used.pdf')
 
-f = open('chisq_with_binary.txt','r')                                                       #!!
+f = open('chisq.txt','r')                                                       #!!
 # change these values depending on what simulation run, assuming all stars
 # and 1000 simulations run on each
 n_stars = len(data_30pc)
@@ -253,7 +253,7 @@ plt.title('$\chi^2$ Distribution With Binaries')
 plt.xlim(1,4)
 #plt.savefig('chi_sq_distn_with_binary.pdf')
 
-params = np.load('sim_params_with_binary.npy',allow_pickle = True)
+params = np.load('sim_params.npy',allow_pickle = True)
 a = []
 m_p = []
 
@@ -284,6 +284,7 @@ plt.scatter(d,a,s=np.exp(m_p*750)/5000,c=detections['bp_rp'],cmap = 'RdYlBu')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
+
 #plt.savefig('distance_vs_a.pdf')
 
 # plt.figure(15)

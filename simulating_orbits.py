@@ -142,7 +142,7 @@ if __name__=="__main__":
     test_binary_orbit=False
     data_dir = './'
     #data_dir = '/Users/mireland/Google Drive/EDR3_Planets/'
-    n_sims = 10
+    n_sims = 1000
     chi2_threshold=10
 
     #Use -1 for all stars.
@@ -226,7 +226,6 @@ if __name__=="__main__":
 
             chi_for_sim= calc_chi_sq(radec_sim,data_30pc[j])
             param = np.array([chi_for_sim,a,m_planet])
-            print(param)
             
             params.append(param)
         all_star_radecs.append(radecs)
@@ -234,8 +233,8 @@ if __name__=="__main__":
         j +=1
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params_for_plot.npy',all_star_params)                       #!!
-    f = open('chisq_for_plot.txt','w')                                       #!!
+    np.save('sim_params.npy',all_star_params)                       #!!
+    f = open('chisq.txt','w')                                       #!!
     chis = np.empty((n_stars, n_sims))
     for i in range(n_stars):
         for j in range(n_sims):
