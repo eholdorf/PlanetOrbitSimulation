@@ -8,6 +8,8 @@ import model_parameters as models
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.table import Table
+import astropy.units as u
+import astropy.constants as c
 
 # Import the data, all stars in 30pc
 data_dir = './'
@@ -359,7 +361,10 @@ m_p = []
 #above_threshold = [True if max(chis[i])>chi2_threshold else False for i in 
 #                   range(len(chis))]
 best_planet = np.argmax(chis_plot, axis=1)
-above_threshold = np.max(chis_plot, axis=1)>25 #chi2_threshold
+
+#Lets only consider the first planet here.
+above_threshold = np.max(chis_plot, axis=1)>chi2_threshold
+above_threshold = chis_plot[:,0]>25
 
 # limit data
 best_planet = best_planet[above_threshold]
@@ -370,9 +375,12 @@ detection_chis = chis[above_threshold]
 d = [1000/detections[i]['parallax_gaia'] for i in range(len(detections))]
 params_for_plot = params_for_plot[above_threshold]
 
+#Here we plot all stars *if* the planet is above the threshold
 for i in range(len(params_for_plot)):
-    a.append(params_for_plot[i][best_planet[i]][0])
-    m_p.append(params_for_plot[i][best_planet[i]][1])
+    a.append(params_for_plot[i][0][0])
+    m_p.append(params_for_plot[i][0][1])
+    #a.append(params_for_plot[i][best_planet[i]][0])
+    #m_p.append(params_for_plot[i][best_planet[i]][1])
 
 #!!! This is the mysterious figure !!!        
 m_p = np.array(m_p)
@@ -390,6 +398,19 @@ plt.savefig('distance_vs_a.pdf')
 #Do these match? params_for_plot is only a and m_p from the simulation.
 #plt.semilogy(params_for_plot[:,:,0].flatten(), chis_plot.flatten(),'.')
 #No change between 3 and 12 AU...
+
+#Here is a messay way to et a plot.
+fig = plt.figure(19)
+plt.clf()
+ax = plt.gca()
+ax.scatter(d,m_p*c.M_sun.to(u.M_jup).value, c=detections['bp_rp'], alpha=0.8, edgecolors='none', cmap='RdYlBu_r')
+dplot = np.arange(10,31)
+plt.plot(dplot, dplot/20)
+plt.axis([3,30,0.5,20])
+ax.set_yscale('log')
+plt.xlabel('Distance (pc)')
+plt.ylabel(r'Mass (M$_{Jup}$)')
+plt.show()
 
 plt.figure(17)
 plt.clf()
