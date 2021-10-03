@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 from astropy.table import Table
 import model_parameters as models
 import astropy.units as u
+import time
 plt.ion()
-
+start = time.time()
 # testing Mike's code for planet simulation
 '''
 bo.binary_orbit([time, period, semi-major axis, eccentricity, orbital angle,
@@ -156,19 +157,6 @@ if __name__=="__main__":
         plt.clf()
         plt.axis('equal')
         plt.plot(rho*np.cos(np.radians(theta)), rho*np.sin(np.radians(theta)))
-
-    # hip ids for binaries
-    # binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
-    #                          18512,21482,26501,29568,31246,32723,41211,54155,
-    #                          56242,56838,60370,64583,77358,79607,86282,92919,
-    #                          93926,94336,96895,97640,97944,109812,113421])
-    # # hip ids for binaries, and likely binaries
-    # binary_hip_id = np.array([1292, 1598,3588, 5110,12158,16846,17666,17749,
-    #                           18512,21482,26501,29568,31246,32723,41211,54155,
-    #                           56242,56838,60370,64583,77358,79607,86282,92919,
-    #                           93926,94336,96895,97640,97944,109812,113421,
-    #                           22431,43410,45836,51138,54922,54952,56280,
-    #                           60074,95730,111686,113701,30314])
     
     # Import the data, all stars in 30pc
     data_30pc = Table.read(data_dir + 'data_30_pc.fits')
@@ -196,7 +184,8 @@ if __name__=="__main__":
     # have this line if want to restrict the data set
    # bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                             # !!
    #                   for i in range(len(data_30pc_chisq))])
-
+    #data_30pc = data_30pc[np.where(data_30pc['ruwe']<1.4)]                     #!!
+   
     if n_stars==-1:
         n_stars = len(data_30pc)                                                #!!
 
@@ -233,20 +222,31 @@ if __name__=="__main__":
         j +=1
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params.npy',all_star_params)                       #!!
-    f = open('chisq.txt','w')                                       #!!
-    chis = np.empty((n_stars, n_sims))
-    for i in range(n_stars):
-        for j in range(n_sims):
-            chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc[i])#!!
-            f.write(str(chis[i,j])+'\n')
-    f.close()
-    
+    np.save('sim_params_for_plot.npy',all_star_params)      
+# =============================================================================                 #!!
+#     f = open('chisq.txt','w')                                       #!!
+#     chis = np.empty((n_stars, n_sims))
+#     for i in range(n_stars):
+#         for j in range(n_sims):
+#             chis[i,j] = calc_chi_sq(all_star_radecs[i,j],data_30pc[i])#!!
+#             f.write(str(chis[i,j])+'\n')
+#     f.close()
+# =============================================================================
 planet_frequency = 0.1968
-
+all_params = np.load('sim_params_for_plot.npy',allow_pickle = True)
 all_star_planet_detections = []
-
+chis = np.zeros((n_stars, n_sims))
+i = 0
+for star_param in all_params:
+    j = 0
+    for sim_param in star_param:
+        chis[i,j] = sim_param[0]
+        j+= 1
+    i += 1
 for i in range(n_stars):
-    number_detections = np.sum(chis[i,:]>chi2_threshold)/n_sims * planet_frequency
+    number_detections=np.sum(chis[i,:]>chi2_threshold)/n_sims*planet_frequency
     all_star_planet_detections.append(number_detections)
     
+end = time.time()
+
+print(end-start)

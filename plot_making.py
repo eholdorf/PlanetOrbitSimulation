@@ -14,6 +14,7 @@ import astropy.constants as c
 # Import the data, all stars in 30pc
 data_dir = './'
 chi2_threshold = 10
+all_params = np.load('sim_params.npy',allow_pickle = True)
 
 # hip ids for binaries
 binary_hip_id = np.array([1292,1598,3588,5110,5260,12158,13081,13642,16846,
@@ -100,22 +101,19 @@ plt.plot(distances,masses,'k.')
 plt.xlabel('Distance (pc)')
 plt.ylabel(r'Mass ($M_\odot$)')
 #plt.savefig('mass_distance_stars_used.pdf')
-
-f = open('chisq.txt','r')                                                       #!!
+                                                      #!!
 # change these values depending on what simulation run, assuming all stars
 # and 1000 simulations run on each
 n_stars = len(data_30pc)
 n_sims = 1000
 chis = np.zeros((n_stars, n_sims))
 i = 0
-j = 0
-for line in f.readlines():
-    chis[i,j] = float(line) 
-    j += 1
-    if j >= n_sims:
-        i += 1
-        j = 0
-f.close()
+for star_param in all_params:
+    j = 0
+    for sim_param in star_param:
+        chis[i,j] = sim_param[0]
+        j+= 1
+    i += 1
 
 plt.figure(4)
 plt.clf()
@@ -255,7 +253,7 @@ plt.title('$\chi^2$ Distribution With Binaries')
 plt.xlim(1,4)
 #plt.savefig('chi_sq_distn_with_binary.pdf')
 
-params = np.load('sim_params.npy',allow_pickle = True)
+params = all_params
 a = []
 m_p = []
 
@@ -276,13 +274,13 @@ d = [1000/detections[i]['parallax_gaia'] for i in range(len(detections))]
 params = params[above_threshold]
 
 for i in range(len(params)):
-    a.append(params[i][max_chi_index[i]][0])
-    m_p.append(params[i][max_chi_index[i]][1])
+    a.append(params[i][max_chi_index[i]][1])
+    m_p.append(params[i][max_chi_index[i]][2])
         
 m_p = np.array(m_p)
 plt.figure(14)
 plt.clf()
-plt.scatter(d,a,s=np.exp(m_p*750)/5000,c=detections['bp_rp'],cmap = 'RdYlBu')
+plt.scatter(d,a,s=np.exp(m_p)/5000,c=detections['bp_rp'],cmap = 'RdYlBu')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
@@ -336,25 +334,18 @@ plt.colorbar(label =r'$B_p - R_p$')
 # plt.xlabel('Distance (pc)')
 # plt.ylabel(r'Stellar Mass ($M_\odot$)') 
 # plt.savefig('mass_distance_stars_used.pdf')
-
-
-f = open('chisq_for_plot.txt','r')                                                       #!!
-# change these values depending on what simulation run, assuming all stars
-# and 1000 simulations run on each
-n_stars = len(data_30pc)
-n_sims = 10
-chis_plot = np.zeros((n_stars, n_sims))
-i = 0
-j = 0
-for line in f.readlines():
-    chis_plot[i,j] = float(line) 
-    j += 1
-    if j >= n_sims:
-        i += 1
-        j = 0
-f.close()
-
 params_for_plot = np.load('sim_params_for_plot.npy',allow_pickle = True)
+n_stars_plot = len(data_30pc)
+n_sims_plot = 10
+chis_plot = np.zeros((n_stars_plot, n_sims_plot))
+i = 0
+for star_param in params_for_plot:
+    j = 0
+    for sim_param in star_param:
+        chis_plot[i,j] = sim_param[0]
+        j+= 1
+    i += 1
+
 a = []
 m_p = []
 
@@ -365,23 +356,21 @@ best_planet = np.argmax(chis_plot, axis=1)
 
 #Lets only consider the first planet here.
 above_threshold = np.max(chis_plot, axis=1)>chi2_threshold
-above_threshold = chis_plot[:,0]>25
+above_threshold = chis_plot[:,0]>chi2_threshold
 
 # limit data
 best_planet = best_planet[above_threshold]
 detections = data_30pc[above_threshold]
 # limit chi sq
-detection_chis = chis[above_threshold]
+detection_chis = chis_plot[above_threshold]
 
 d = [1000/detections[i]['parallax_gaia'] for i in range(len(detections))]
 params_for_plot = params_for_plot[above_threshold]
 
 #Here we plot all stars *if* the planet is above the threshold
 for i in range(len(params_for_plot)):
-    a.append(params_for_plot[i][0][0])
-    m_p.append(params_for_plot[i][0][1])
-    #a.append(params_for_plot[i][best_planet[i]][0])
-    #m_p.append(params_for_plot[i][best_planet[i]][1])
+    a.append(params_for_plot[i][0][1])
+    m_p.append(params_for_plot[i][0][2])
 
 #!!! This is the mysterious figure !!!        
 m_p = np.array(m_p)
@@ -391,7 +380,7 @@ plt.scatter(d,a,s=(m_p*10000),c=detections['bp_rp'],cmap = 'RdYlBu_r')
 plt.xlabel('Distance (pc)')
 plt.ylabel('Semi-Major Axis (AU)')
 plt.colorbar(label =r'$B_p - R_p$')
-plt.savefig('distance_vs_a.pdf')
+#plt.savefig('distance_vs_a.pdf')
 #!!! MJI Lets have a look at some of those mysterious systems.
 #data_30pc is all planets
 #above_threshold is True if at least 1 planet is above the threshold for that
@@ -400,17 +389,18 @@ plt.savefig('distance_vs_a.pdf')
 #plt.semilogy(params_for_plot[:,:,0].flatten(), chis_plot.flatten(),'.')
 #No change between 3 and 12 AU...
 
-#Here is a messay way to et a plot.
+#Here is a messay way to get a plot.
 fig = plt.figure(19)
 plt.clf()
 ax = plt.gca()
-ax.scatter(d,m_p*c.M_sun.to(u.M_jup).value, c=detections['bp_rp'], alpha=0.8, edgecolors='none', cmap='RdYlBu_r')
+im = ax.scatter(d,m_p*c.M_sun.to(u.M_jup).value, c=detections['bp_rp'], alpha=0.8, edgecolors='none', cmap='RdYlBu_r')
 dplot = np.arange(10,31)
-plt.plot(dplot, dplot/20)
-plt.axis([3,30,0.5,20])
+ax.plot(dplot, dplot/20)
+ax.axis([3,31,0.5,20])
 ax.set_yscale('log')
 plt.xlabel('Distance (pc)')
 plt.ylabel(r'Mass (M$_{Jup}$)')
+fig.colorbar(im,label =r'$B_p - R_p$',ax=ax)
 plt.show()
 
 plt.figure(17)
