@@ -207,7 +207,8 @@ def interpolate_omega(low = 0, high = 180, num = 10000):
     omega = np.random.uniform(low=low, high=high, size=num) 
     return omega
 
-def interpolate_semimajoraxis(low = 3, high = 30, num = 10000, ninterp=1000):
+def interpolate_semimajoraxis(low = 3, high = 30, num = 10000, ninterp=1000,
+                              C = 350, beta = -0.86,a0 = 3.6, gamma = 1.59):
     '''
 
     Parameters
@@ -229,7 +230,7 @@ def interpolate_semimajoraxis(low = 3, high = 30, num = 10000, ninterp=1000):
     a = np.linspace(low,high,ninterp)
     
     # semi-major axis distribution
-    aDistn = Fulton_model(a)
+    aDistn = Fulton_model(a,C,beta,a0,gamma)
     
     # my way interpolating values
     a_choice = np.random.choice(a, size = num, 

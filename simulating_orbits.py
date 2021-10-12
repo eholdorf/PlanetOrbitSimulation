@@ -222,7 +222,7 @@ if __name__=="__main__":
         j +=1
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params_for_plot.npy',all_star_params)      
+    np.save('sim_params.npy',all_star_params)      
 # =============================================================================                 #!!
 #     f = open('chisq.txt','w')                                       #!!
 #     chis = np.empty((n_stars, n_sims))
@@ -233,7 +233,7 @@ if __name__=="__main__":
 #     f.close()
 # =============================================================================
 planet_frequency = 0.1968
-all_params = np.load('sim_params_for_plot.npy',allow_pickle = True)
+all_params = np.load('sim_params.npy',allow_pickle = True)
 all_star_planet_detections = []
 chis = np.zeros((n_stars, n_sims))
 i = 0
