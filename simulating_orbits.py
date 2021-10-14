@@ -137,7 +137,12 @@ def calc_chi_sq(sim,data_row):
                                               data_row['pmdec_gaia_error']**2)
     
     return chi2
-
+def gamma(C):
+    return 0.001515789473684197*C+ 1.0690225563909803
+def beta(C):
+    return -0.0019749089102352037*C - 0.15405404659378746
+def a_0(C):
+    return 0.006415926002595336*C +1.3721307864728447
 if __name__=="__main__":
     #For testing, you may not want all stars!
     test_binary_orbit=False
@@ -202,7 +207,8 @@ if __name__=="__main__":
         t_k = np.array([1991.25,2015.0,2017.0])
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
-            a = models.interpolate_semimajoraxis(num=1)[0]
+            a = models.interpolate_semimajoraxis(num=1,C=400,gamma = gamma(400),beta=beta(400),
+                                                 a0 = a_0(400))[0]
             T = models.interpolate_period([a],[m_star])[0]
             omega = models.interpolate_omega(num=1)[0]
             Omega = models.interpolate_Omega(num=1)[0]
@@ -222,7 +228,7 @@ if __name__=="__main__":
         j +=1
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params.npy',all_star_params)      
+    np.save('sim_params_C_400.npy',all_star_params)      
 # =============================================================================                 #!!
 #     f = open('chisq.txt','w')                                       #!!
 #     chis = np.empty((n_stars, n_sims))
@@ -232,8 +238,8 @@ if __name__=="__main__":
 #             f.write(str(chis[i,j])+'\n')
 #     f.close()
 # =============================================================================
-planet_frequency = 0.1968
-all_params = np.load('sim_params.npy',allow_pickle = True)
+planet_frequency = 0.2222
+all_params = np.load('sim_params_C_400.npy',allow_pickle = True)
 all_star_planet_detections = []
 chis = np.zeros((n_stars, n_sims))
 i = 0

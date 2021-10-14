@@ -7,7 +7,6 @@ Created on Thu Jul 29 13:55:17 2021
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import gamma as scipygamma
-import astropy.units as u
 import re
 plt.ion()
 
@@ -66,17 +65,19 @@ def interpolate_eccentricity(low = 0.001,high = 1,num = 10000, ninterp=1000):
 
     Parameters
     ----------
-    low : TYPE, optional
-        DESCRIPTION. The default is 0.001.
-    high : TYPE, optional
-        DESCRIPTION. The default is 1.
-    num : TYPE, optional
-        DESCRIPTION. The default is 10000.
+    low : type - number , optional
+        minimum eccentricity to model. The default is 0.001.
+    high : type - number, optional
+        maximum eccentricity to model. The default is 1.
+    num : type - integer, optional
+        number of points to model. The default is 10000.
+    ninterp : type - integer
+        number of points in interpolation. The defult is 1000.
 
     Returns
     -------
-    EccentricityInterp2 : TYPE
-        DESCRIPTION.
+    EccentricityInterp2 : type - number
+        list of interpolated eccentricity values.
 
     '''
     
@@ -305,9 +306,6 @@ def interpolate_mass(data, ddir='./'):
         if abs(abs(BpRp[i])-abs(M_G[i]))<2.0:
             indexes.append(i)
         i += 1
-    
-    BpRpChecked = [BpRp[i] for i in indexes]
-    MassChecked = [Mass[i] for i in indexes]
     
     MassInterp = np.interp(data,BpRp,Mass)
     
