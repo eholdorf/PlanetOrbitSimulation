@@ -16,18 +16,18 @@ data_dir = './'
 chi2_threshold = 10
 all_params = np.load('sim_params.npy',allow_pickle = True)
 
-# hip ids for binaries
-binary_hip_id = np.array([1292,1598,3588,5110,5260,12158,13081,13642,16846,
-                         17666,17749,18512,20552,21482,22431,22715,24783,
-                         26501,29568,31246,32723,38931,39826,41211,42173,
-                         42697,43233,43410,43422,43557,44295,45343,45836,
-                         47080,48133,51138,51248,51525,54155,54922,54952,
-                         56242,56280,56452,56809,56838,59707,60074,60370,
-                         60759,64532,64583,65343,66238,67308,69965,73184,
-                         73633,73941,79492,79607,79702,80008,80925,83020,
-                         86282,91605,92919,93926,94336,95730,96895,97640,
-                         97944,98677,103768,104214,108162,109812,110109,
-                         111686,113421,113701,117542,118310,77358])
+# hip ids for binaries (wide, close, wide (look at acceleration))
+binary_hip_id = np.array([1292,3588,5110,5260,13642,16846,17666,17749,18512,
+                          20552,22431,22715,24783,26501,29568,31246,32723,
+                          38931,39826,43233,43422,43557,44295,45343,45836,
+                          47080,48133,51248,51525,54922,54952,56452,56809,
+                          56838,59707,60759,64583,65343,66238,67308,69965,
+                          73633,73941,77358,79492,79607,79702,80008,80925,
+                          83020,86282,94336,95730,96895,98677,103768,104214,
+                          108162,109812,111686,117542,
+                          12158,13081,13513,21482,24205,26369,42173,55052,
+                          60816,92919,97640,102119,118162,
+                          29208,41211])
  
 #Import the data, all stars in 30pc
 data_30pc = Table.read(data_dir + 'data_30_pc.fits')
@@ -145,7 +145,7 @@ plt.ylabel(r'Stellar Mass ($M_\odot$)')
 #plt.savefig('mass_distance_stars_used.pdf')
 
 
-planet_frequency = 0.1968 
+planet_frequency = 0.2233 
 
 all_star_planet_detections = []
 
@@ -336,7 +336,7 @@ plt.colorbar(label =r'$B_p - R_p$')
 # plt.savefig('mass_distance_stars_used.pdf')
 params_for_plot = np.load('sim_params_for_plot.npy',allow_pickle = True)
 n_stars_plot = len(data_30pc)
-n_sims_plot = 10
+n_sims_plot = 1
 chis_plot = np.zeros((n_stars_plot, n_sims_plot))
 i = 0
 for star_param in params_for_plot:
@@ -393,7 +393,8 @@ plt.colorbar(label =r'$B_p - R_p$')
 fig = plt.figure(19)
 plt.clf()
 ax = plt.gca()
-im = ax.scatter(d,m_p*c.M_sun.to(u.M_jup).value, c=detections['bp_rp'], alpha=0.8, edgecolors='none', cmap='RdYlBu_r')
+im = ax.scatter(d,m_p*c.M_sun.to(u.M_jup).value, c=detections['bp_rp'],
+                alpha = 0.8,edgecolors='none', cmap='RdYlBu_r')
 dplot = np.arange(10,31)
 ax.plot(dplot, dplot/20)
 ax.axis([3,31,0.5,20])
@@ -426,3 +427,22 @@ plt.xlabel('log$_{10}$($\chi^2$)')
 plt.ylabel('Number of Binaries')
 plt.legend()
 #plt.savefig('removed_binary_chisq.pdf')
+
+C = [130,200,250,300,350,375,400]
+C_detections = [70.26,72.39,74.02,75.88,77.82,77.91,78.47]
+C_erry = [1/np.sqrt(C_detections[i]) for i in range(len(C))]
+a_0 = [0.5,1.0,1.5,2.0,2.5,3.0,3.6]
+a_0_detections = [75.80,76.06,76.94,77.74,78.26,78.15,77.82]
+a_0_erry = [1/np.sqrt(a_0_detections[i]) for i in range(len(a_0))]
+
+plt.figure(20)
+plt.errorbar(C,C_detections,yerr = C_erry,fmt='k.',capsize = 3.0)
+plt.xlabel('C')
+plt.ylabel('Number Detections')
+#plt.savefig('c_versus_detections.pdf')
+
+plt.figure(21)
+plt.errorbar(a_0,a_0_detections,yerr = a_0_erry,fmt='k.',capsize = 3.0)
+plt.xlabel('a0')
+plt.ylabel('Number Detections')
+#plt.savefig('a0_versus_detections.pdf')
