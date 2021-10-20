@@ -189,7 +189,7 @@ if __name__=="__main__":
     # have this line if want to restrict the data set
    # bp_rp = np.array([data_30pc_chisq[i]['bp_rp']                             # !!
    #                   for i in range(len(data_30pc_chisq))])
-    #data_30pc = data_30pc[np.where(data_30pc['ruwe']<1.4)]                     #!!
+    data_30pc = data_30pc[np.where(data_30pc['ruwe']<1.5)]                     #!!
    
     if n_stars==-1:
         n_stars = len(data_30pc)                                                #!!
@@ -207,7 +207,7 @@ if __name__=="__main__":
         t_k = np.array([1991.25,2015.0,2017.0])
         for i in range(n_sims): 
             m_planet = models.interpolate_planet_mass(num=1)[0]
-            a = models.interpolate_semimajoraxis(num=1,a0 = 2.75)[0]
+            a = models.interpolate_semimajoraxis(num=1)[0]
             T = models.interpolate_period([a],[m_star])[0]
             omega = models.interpolate_omega(num=1)[0]
             Omega = models.interpolate_Omega(num=1)[0]
@@ -227,7 +227,7 @@ if __name__=="__main__":
         j +=1
     all_star_radecs = np.array(all_star_radecs)
     all_star_params = np.array(all_star_params, dtype = object)
-    np.save('sim_params_a_275.npy',all_star_params)      
+    np.save('sim_params_ruwe.npy',all_star_params)      
 # =============================================================================                 #!!
 #     f = open('chisq.txt','w')                                       #!!
 #     chis = np.empty((n_stars, n_sims))
@@ -237,8 +237,8 @@ if __name__=="__main__":
 #             f.write(str(chis[i,j])+'\n')
 #     f.close()
 # =============================================================================
-planet_frequency = 0.2198
-all_params = np.load('sim_params_a_275.npy',allow_pickle = True)
+planet_frequency = 0.2233
+all_params = np.load('sim_params_ruwe.npy',allow_pickle = True)
 all_star_planet_detections = []
 chis = np.zeros((n_stars, n_sims))
 i = 0
